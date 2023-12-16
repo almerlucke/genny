@@ -1,5 +1,7 @@
 package sequence
 
+import "math/rand"
+
 // Sequence of values
 type Sequence[T any] struct {
 	values     []T
@@ -58,4 +60,11 @@ func (s *Sequence[T]) Done() bool {
 func (s *Sequence[T]) Reset() {
 	s.index = 0
 	s.done = false
+}
+
+// Randomize shuffles the sequence values randomly
+func (s *Sequence[T]) Randomize() {
+	rand.Shuffle(len(s.values), func(i, j int) {
+		s.values[i], s.values[j] = s.values[j], s.values[i]
+	})
 }

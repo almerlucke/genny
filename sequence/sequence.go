@@ -10,17 +10,16 @@ type Sequence[T any] struct {
 	done       bool
 }
 
-// NewSequence returns a new non-continuous sequence
-func NewSequence[T any](values ...T) *Sequence[T] {
+// New returns a new non-continuous sequence
+func New[T any](values ...T) *Sequence[T] {
 	return &Sequence[T]{
-		values:     values,
-		index:      0,
-		continuous: false,
+		values: values,
+		index:  0,
 	}
 }
 
-// NewContinuousSequence returns a new continuous (looping) sequence
-func NewContinuousSequence[T any](values ...T) *Sequence[T] {
+// NewContinuous returns a new continuous (looping) sequence
+func NewContinuous[T any](values ...T) *Sequence[T] {
 	return &Sequence[T]{
 		values:     values,
 		index:      0,

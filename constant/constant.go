@@ -5,8 +5,8 @@ type Constant[T any] struct {
 	value T
 }
 
-// NewConstant returns a new constant value
-func NewConstant[T any](value T) *Constant[T] {
+// New returns a new constant value
+func New[T any](value T) *Constant[T] {
 	return &Constant[T]{
 		value: value,
 	}

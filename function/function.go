@@ -6,8 +6,8 @@ type Function[T any] struct {
 	f   func(any) T
 }
 
-// NewFunction creates a new function generator
-func NewFunction[T any](ctx any, f func(any) T) *Function[T] {
+// New creates a new function generator
+func New[T any](ctx any, f func(any) T) *Function[T] {
 	return &Function[T]{ctx: ctx, f: f}
 }
 

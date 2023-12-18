@@ -16,8 +16,8 @@ type Repeat[T any] struct {
 	lastVal T
 }
 
-// NewRepeat creates a new repeat generator
-func NewRepeat[T any](gen genny.Generator[T], min int, max int) *Repeat[T] {
+// New creates a new repeat generator
+func New[T any](gen genny.Generator[T], min int, max int) *Repeat[T] {
 	if min > max {
 		tmp := min
 		min = max
@@ -61,6 +61,9 @@ func (r *Repeat[T]) Done() bool {
 
 // Reset the Repeat generator, n is calculated again in a random way between min and max given
 func (r *Repeat[T]) Reset() {
-	r.gen.Reset()
+	if !r.gen.Continuous() {
+		// only reset if gen is not continuous
+		r.gen.Reset()
+	}
 	r.n = r.min + rand.Intn((r.max-r.min)+1)
 }

@@ -9,6 +9,7 @@ import (
 	"genny/or"
 	"genny/repeat"
 	"genny/sequence"
+	"genny/walk"
 	"log"
 	"math/rand"
 )
@@ -60,5 +61,16 @@ func main() {
 	g = flatten.NewFlatten[float64](sequence.New[[]float64]([]float64{1.0, 2.0, 3.0}, []float64{4.0, 5.0, 6.0}))
 	for !g.Done() {
 		log.Printf("flatten: %f", g.NextValue())
+	}
+
+	g = walk.New[float64](walk.NewMatrix(
+		[]int{3, 3},
+		[]float64{
+			1.0, 2.0, 3.0,
+			4.0, 5.0, 6.0,
+			7.0, 8.0, 9.0,
+		}))
+	for i := 0; i < 10; i++ {
+		log.Printf("walk: %f", g.NextValue())
 	}
 }

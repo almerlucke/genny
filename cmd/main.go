@@ -4,6 +4,7 @@ import (
 	"genny"
 	"genny/and"
 	"genny/bucket"
+	"genny/flatten"
 	"genny/function"
 	"genny/or"
 	"genny/repeat"
@@ -54,5 +55,10 @@ func main() {
 	g = or.NewContinuous[float64](or.Indexed, sequence.NewContinuous(2.0, 3.0, 4.0), sequence.NewContinuous(12.0, 13.0, 14.0))
 	for i := 0; i < 20; i++ {
 		log.Printf("or indexed continuous: %f", g.NextValue())
+	}
+
+	g = flatten.NewFlatten[float64](sequence.New[[]float64]([]float64{1.0, 2.0, 3.0}, []float64{4.0, 5.0, 6.0}))
+	for !g.Done() {
+		log.Printf("flatten: %f", g.NextValue())
 	}
 }

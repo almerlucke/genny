@@ -9,6 +9,7 @@ import (
 	"genny/or"
 	"genny/repeat"
 	"genny/sequence"
+	"genny/transform"
 	"genny/walk"
 	"log"
 	"math/rand"
@@ -72,5 +73,11 @@ func main() {
 		}))
 	for i := 0; i < 10; i++ {
 		log.Printf("walk: %f", g.NextValue())
+	}
+
+	var f transform.Function[float64] = func(v float64) float64 { return v + 12 }
+	g = transform.New[float64](sequence.New(2.0, 3.0, 4.0), f)
+	for !g.Done() {
+		log.Printf("transform: %f", g.NextValue())
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"genny/bucket"
 	"genny/flatten"
 	"genny/function"
+	"genny/markov"
 	"genny/or"
 	"genny/repeat"
 	"genny/sequence"
@@ -79,5 +80,18 @@ func main() {
 	g = transform.New[float64](sequence.New(2.0, 3.0, 4.0), f)
 	for !g.Done() {
 		log.Printf("transform: %f", g.NextValue())
+	}
+
+	state1 := markov.NewProbabilityState(1.0)
+	state2 := markov.NewProbabilityState(2.0)
+	state3 := markov.NewProbabilityState(3.0)
+	state4 := markov.NewProbabilityState(4.0)
+	state1.SetProbabilities(state1, 0.1, state2, 0.9)
+	state2.SetProbabilities(state2, 0.1, state3, 0.9)
+	state3.SetProbabilities(state3, 0.1, state4, 0.9)
+	state4.SetProbabilities(state4, 0.1, nil, 0.9)
+	g = markov.New[float64](state1, 1)
+	for !g.Done() {
+		log.Printf("markov: %f", g.NextValue())
 	}
 }

@@ -1,3 +1,3 @@
-module genny
+module github.com/almerlucke/genny
 
-go 1.21
+go 1.21.3

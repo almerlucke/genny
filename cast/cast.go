@@ -1,6 +1,6 @@
 package cast
 
-import "genny"
+import "github.com/almerlucke/genny"
 
 // Caster can cast from one type to the other
 type Caster[T1, T2 any] interface {

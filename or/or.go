@@ -1,8 +1,8 @@
 package or
 
 import (
-	"genny"
-	"genny/bucket"
+	"github.com/almerlucke/genny"
+	"github.com/almerlucke/genny/bucket"
 )
 
 type Mode bucket.Mode

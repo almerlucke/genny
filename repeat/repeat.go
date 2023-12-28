@@ -1,7 +1,7 @@
 package repeat
 
 import (
-	"genny"
+	"github.com/almerlucke/genny"
 	"math/rand"
 )
 

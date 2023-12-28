@@ -1,6 +1,6 @@
 package continuous
 
-import "genny"
+import "github.com/almerlucke/genny"
 
 // Continuous makes a non-continuous generator continuous
 type Continuous[T any] struct {

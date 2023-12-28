@@ -1,7 +1,7 @@
 package and
 
 import (
-	"genny"
+	"github.com/almerlucke/genny"
 	"math/rand"
 )
 

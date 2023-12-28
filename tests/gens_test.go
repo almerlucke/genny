@@ -2,21 +2,22 @@ package tests
 
 import (
 	"fmt"
-	"genny"
-	"genny/and"
-	"genny/arpeggio"
-	"genny/bucket"
-	"genny/cast"
-	"genny/continuous"
-	"genny/flatten"
-	"genny/floatgens/ramp"
-	"genny/function"
-	"genny/markov"
-	"genny/or"
-	"genny/repeat"
-	"genny/sequence"
-	"genny/transform"
-	"genny/walk"
+	"github.com/almerlucke/genny"
+	"github.com/almerlucke/genny/and"
+	"github.com/almerlucke/genny/arpeggio"
+	"github.com/almerlucke/genny/bucket"
+	"github.com/almerlucke/genny/cast"
+	"github.com/almerlucke/genny/combine"
+	"github.com/almerlucke/genny/continuous"
+	"github.com/almerlucke/genny/flatten"
+	"github.com/almerlucke/genny/floatgens/ramp"
+	"github.com/almerlucke/genny/function"
+	"github.com/almerlucke/genny/markov"
+	"github.com/almerlucke/genny/or"
+	"github.com/almerlucke/genny/repeat"
+	"github.com/almerlucke/genny/sequence"
+	"github.com/almerlucke/genny/transform"
+	"github.com/almerlucke/genny/walk"
 	"log"
 	"math/rand"
 	"testing"
@@ -120,5 +121,10 @@ func TestGens(t *testing.T) {
 	g = continuous.New[float64](sequence.New(1.0, 2.0, 3.0, 4.0))
 	for i := 0; i < 10; i++ {
 		log.Printf("continuous: %f", g.NextValue())
+	}
+
+	gcm := combine.New[float64](sequence.New(1.0, 2.0, 3.0, 4.0), sequence.New(1.0, 2.0, 3.0, 4.0))
+	for !gcm.Done() {
+		log.Printf("combine: %v", gcm.NextValue())
 	}
 }

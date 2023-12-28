@@ -1,6 +1,6 @@
 package flatten
 
-import "genny"
+import "github.com/almerlucke/genny"
 
 // Flatten flattens a generator slice values
 type Flatten[T any] struct {

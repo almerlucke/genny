@@ -1,6 +1,6 @@
 package transform
 
-import "genny"
+import "github.com/almerlucke/genny"
 
 type Transformer[T any] interface {
 	Transform(T) T

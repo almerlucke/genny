@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"genny/bucket"
 	"genny/cast"
 	"genny/flatten"
-	"genny/floatgen/ramp"
+	"genny/floatgens/ramp"
 	"genny/function"
 	"genny/markov"
 	"genny/or"
@@ -18,6 +18,7 @@ import (
 	"genny/walk"
 	"log"
 	"math/rand"
+	"testing"
 )
 
 type StringCaster struct{}
@@ -26,7 +27,7 @@ func (sc *StringCaster) Cast(f float64) string {
 	return fmt.Sprintf("test cast: %f", f)
 }
 
-func main() {
+func TestGens(t *testing.T) {
 	var g genny.Generator[float64] = sequence.New(1.0, 2.0, 3.0)
 	for !g.Done() {
 		log.Printf("sequence: %f", g.NextValue())

@@ -65,5 +65,6 @@ func (r *Repeat[T]) Reset() {
 		// only reset if gen is not continuous
 		r.gen.Reset()
 	}
+
 	r.n = r.min + rand.Intn((r.max-r.min)+1)
 }

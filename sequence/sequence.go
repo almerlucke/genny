@@ -20,11 +20,9 @@ func New[T any](values ...T) *Sequence[T] {
 
 // NewContinuous returns a new continuous (looping) sequence
 func NewContinuous[T any](values ...T) *Sequence[T] {
-	return &Sequence[T]{
-		values:     values,
-		index:      0,
-		continuous: true,
-	}
+	s := New(values...)
+	s.continuous = true
+	return s
 }
 
 // NextValue returns the next value in a sequence

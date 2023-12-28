@@ -1,10 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"genny"
 	"genny/and"
+	"genny/arpeggio"
 	"genny/bucket"
+	"genny/cast"
 	"genny/flatten"
+	"genny/floatgen/ramp"
 	"genny/function"
 	"genny/markov"
 	"genny/or"
@@ -15,6 +19,12 @@ import (
 	"log"
 	"math/rand"
 )
+
+type StringCaster struct{}
+
+func (sc *StringCaster) Cast(f float64) string {
+	return fmt.Sprintf("test cast: %f", f)
+}
 
 func main() {
 	var g genny.Generator[float64] = sequence.New(1.0, 2.0, 3.0)
@@ -93,5 +103,15 @@ func main() {
 	g = markov.New[float64](state1, 1)
 	for !g.Done() {
 		log.Printf("markov: %f", g.NextValue())
+	}
+
+	g = arpeggio.New([]float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0}, arpeggio.Converge, arpeggio.Exclusive, false)
+	for !g.Done() {
+		log.Printf("arpeggio: %f", g.NextValue())
+	}
+
+	gc := cast.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
+	for !gc.Done() {
+		log.Printf("ramp + cast: %s", gc.NextValue())
 	}
 }

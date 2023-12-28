@@ -7,6 +7,7 @@ import (
 	"genny/arpeggio"
 	"genny/bucket"
 	"genny/cast"
+	"genny/continuous"
 	"genny/flatten"
 	"genny/floatgens/ramp"
 	"genny/function"
@@ -111,8 +112,13 @@ func TestGens(t *testing.T) {
 		log.Printf("arpeggio: %f", g.NextValue())
 	}
 
-	gc := cast.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
-	for !gc.Done() {
-		log.Printf("ramp + cast: %s", gc.NextValue())
+	gsc := cast.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
+	for !gsc.Done() {
+		log.Printf("ramp + cast: %s", gsc.NextValue())
+	}
+
+	g = continuous.New[float64](sequence.New(1.0, 2.0, 3.0, 4.0))
+	for i := 0; i < 10; i++ {
+		log.Printf("continuous: %f", g.NextValue())
 	}
 }

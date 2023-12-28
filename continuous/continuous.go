@@ -14,10 +14,10 @@ func New[T any](gen genny.Generator[T]) *Continuous[T] {
 
 // NextValue gets next value from wrapped generator and resets if generator is done
 func (c *Continuous[T]) NextValue() (value T) {
-	value = c.NextValue()
+	value = c.gen.NextValue()
 
-	if c.Done() {
-		c.Reset()
+	if c.gen.Done() {
+		c.gen.Reset()
 	}
 
 	return

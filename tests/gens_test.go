@@ -17,6 +17,7 @@ import (
 	"github.com/almerlucke/genny/repeat"
 	"github.com/almerlucke/genny/sequence"
 	"github.com/almerlucke/genny/transform"
+	"github.com/almerlucke/genny/unwrap"
 	"github.com/almerlucke/genny/walk"
 	"log"
 	"math/rand"
@@ -126,5 +127,10 @@ func TestGens(t *testing.T) {
 	gcm := combine.New[float64](sequence.New(1.0, 2.0, 3.0, 4.0), sequence.New(1.0, 2.0, 3.0, 4.0))
 	for !gcm.Done() {
 		log.Printf("combine: %v", gcm.NextValue())
+	}
+
+	gg := unwrap.New[float64](sequence.New[genny.Generator[float64]](sequence.New(1.0, 2.0, 3.0), sequence.New(1.0, 2.0, 3.0)))
+	for !gg.Done() {
+		log.Printf("unwrap: %v", gg.NextValue())
 	}
 }

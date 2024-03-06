@@ -2,33 +2,28 @@ package repeat
 
 import (
 	"github.com/almerlucke/genny"
-	"math/rand"
 )
 
 // Repeat can make a continuous generator non-continuous by only repeating NextValue() n times,
-// or can extend a non-continuous generator by repeating it n times. N is calculated by taking a
-// random value between given min and max inclusive
+// or can extend a non-continuous generator by repeating it n times. N is got by calling f()
 type Repeat[T any] struct {
 	gen     genny.Generator[T]
-	min     int
-	max     int
+	f       func() int
 	n       int
 	lastVal T
 }
 
-// New creates a new repeat generator
-func New[T any](gen genny.Generator[T], min int, max int) *Repeat[T] {
-	if min > max {
-		tmp := min
-		min = max
-		max = tmp
-	}
+// New creates a new repeat generator that repeats n times
+func New[T any](gen genny.Generator[T], n int) *Repeat[T] {
+	return NewWithFunc[T](gen, func() int { return n })
+}
 
+// NewWithFunc creates a new repeat generator that repeats f() times
+func NewWithFunc[T any](gen genny.Generator[T], f func() int) *Repeat[T] {
 	return &Repeat[T]{
 		gen: gen,
-		min: min,
-		max: max,
-		n:   min + rand.Intn((max-min)+1),
+		f:   f,
+		n:   f(),
 	}
 }
 
@@ -59,12 +54,12 @@ func (r *Repeat[T]) Done() bool {
 	return r.n == 0
 }
 
-// Reset the Repeat generator, n is calculated again in a random way between min and max given
+// Reset the Repeat generator, n is calculated again by calling f()
 func (r *Repeat[T]) Reset() {
 	if !r.gen.Continuous() {
 		// only reset if gen is not continuous
 		r.gen.Reset()
 	}
 
-	r.n = r.min + rand.Intn((r.max-r.min)+1)
+	r.n = r.f()
 }

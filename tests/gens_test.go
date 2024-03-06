@@ -10,7 +10,10 @@ import (
 	"github.com/almerlucke/genny/combine"
 	"github.com/almerlucke/genny/continuous"
 	"github.com/almerlucke/genny/flatten"
-	"github.com/almerlucke/genny/floatgens/ramp"
+	"github.com/almerlucke/genny/float/interpolator"
+	"github.com/almerlucke/genny/float/iterator"
+	"github.com/almerlucke/genny/float/iterator/updaters/chaos"
+	"github.com/almerlucke/genny/float/ramp"
 	"github.com/almerlucke/genny/function"
 	"github.com/almerlucke/genny/markov"
 	"github.com/almerlucke/genny/or"
@@ -41,14 +44,14 @@ func TestGens(t *testing.T) {
 		log.Printf("function: %f", g.NextValue())
 	}
 
-	g = repeat.New[float64](sequence.New(2.0, 3.0, 4.0), 5, 8)
+	g = repeat.NewWithFunc[float64](sequence.New(2.0, 3.0, 4.0), func() int { return 3 + rand.Intn(5) })
 	for !g.Done() {
 		log.Printf("repeat: %f", g.NextValue())
 	}
 
 	g = and.New[float64](
-		repeat.New[float64](sequence.New(2.0, 3.0, 4.0), 4, 4),
-		repeat.New[float64](sequence.New(8.0, 9.0, 10.0), 4, 4),
+		repeat.New[float64](sequence.New(2.0, 3.0, 4.0), 4),
+		repeat.New[float64](sequence.New(8.0, 9.0, 10.0), 4),
 	)
 	for !g.Done() {
 		log.Printf("and: %f", g.NextValue())
@@ -132,5 +135,11 @@ func TestGens(t *testing.T) {
 	gg := unwrap.New[float64](sequence.New[genny.Generator[float64]](sequence.New(1.0, 2.0, 3.0), sequence.New(1.0, 2.0, 3.0)))
 	for !gg.Done() {
 		log.Printf("unwrap: %v", gg.NextValue())
+	}
+
+	it := iterator.New([]float64{0.1231}, chaos.NewVerhulstWithFunc(3.6951, chaos.Iter1))
+	ipol := interpolator.New(it, 1, interpolator.Linear, 0.1)
+	for i := 0; i < 100; i++ {
+		log.Printf("interpolator: %f", ipol.NextValue()[0])
 	}
 }

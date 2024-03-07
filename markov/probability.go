@@ -40,7 +40,7 @@ func (ps *ProbabilityState[T]) Value() T {
 	return ps.value
 }
 
-func (ps *ProbabilityState[T]) Next(history []State[T]) (s State[T]) {
+func (ps *ProbabilityState[T]) Next(_ []State[T]) (s State[T]) {
 	r := rand.Float64() * ps.total
 	acc := 0.0
 
@@ -55,6 +55,6 @@ func (ps *ProbabilityState[T]) Next(history []State[T]) (s State[T]) {
 	return
 }
 
-func (ps *ProbabilityState[T]) Start(history []State[T]) State[T] {
+func (ps *ProbabilityState[T]) Start(_ []State[T]) State[T] {
 	return ps
 }

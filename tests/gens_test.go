@@ -6,9 +6,9 @@ import (
 	"github.com/almerlucke/genny/and"
 	"github.com/almerlucke/genny/arpeggio"
 	"github.com/almerlucke/genny/bucket"
-	"github.com/almerlucke/genny/cast"
 	"github.com/almerlucke/genny/combine"
 	"github.com/almerlucke/genny/continuous"
+	"github.com/almerlucke/genny/convert"
 	"github.com/almerlucke/genny/flatten"
 	"github.com/almerlucke/genny/float/fvec"
 	"github.com/almerlucke/genny/float/interpolator"
@@ -33,7 +33,7 @@ import (
 
 type StringCaster struct{}
 
-func (sc *StringCaster) Cast(f float64) string {
+func (sc *StringCaster) Convert(f float64) string {
 	return fmt.Sprintf("test cast: %f", f)
 }
 
@@ -121,7 +121,7 @@ func TestGens(t *testing.T) {
 		log.Printf("arpeggio: %f", g.Generate())
 	}
 
-	gsc := cast.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
+	gsc := convert.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
 	for !gsc.Done() {
 		log.Printf("ramp + cast: %s", gsc.Generate())
 	}

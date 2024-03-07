@@ -10,9 +10,11 @@ import (
 	"github.com/almerlucke/genny/combine"
 	"github.com/almerlucke/genny/continuous"
 	"github.com/almerlucke/genny/flatten"
+	"github.com/almerlucke/genny/float/fvec"
 	"github.com/almerlucke/genny/float/interpolator"
 	"github.com/almerlucke/genny/float/iterator"
 	"github.com/almerlucke/genny/float/iterator/updaters/chaos"
+	"github.com/almerlucke/genny/float/phasor"
 	"github.com/almerlucke/genny/float/ramp"
 	"github.com/almerlucke/genny/function"
 	"github.com/almerlucke/genny/markov"
@@ -141,5 +143,11 @@ func TestGens(t *testing.T) {
 	ipol := interpolator.New(it, 1, interpolator.Linear, 0.1)
 	for i := 0; i < 100; i++ {
 		log.Printf("interpolator: %f", ipol.Generate()[0])
+	}
+
+	ph := phasor.New(1000.0, 44100.0, 0.0)
+	phv := fvec.New(ph)
+	for i := 0; i < 100; i++ {
+		log.Printf("phasor vectorized: %f", phv.Generate())
 	}
 }

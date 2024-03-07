@@ -15,6 +15,7 @@ import (
 	"github.com/almerlucke/genny/float/iterator"
 	"github.com/almerlucke/genny/float/iterator/updaters/chaos"
 	"github.com/almerlucke/genny/float/phasor"
+	"github.com/almerlucke/genny/float/plot"
 	"github.com/almerlucke/genny/float/ramp"
 	"github.com/almerlucke/genny/function"
 	"github.com/almerlucke/genny/markov"
@@ -24,6 +25,7 @@ import (
 	"github.com/almerlucke/genny/transform"
 	"github.com/almerlucke/genny/unwrap"
 	"github.com/almerlucke/genny/walk"
+	"gonum.org/v1/plot/vg"
 	"log"
 	"math/rand"
 	"testing"
@@ -145,9 +147,14 @@ func TestGens(t *testing.T) {
 		log.Printf("interpolator: %f", ipol.Generate()[0])
 	}
 
-	ph := phasor.New(1000.0, 44100.0, 0.0)
-	phv := fvec.New(ph)
-	for i := 0; i < 100; i++ {
-		log.Printf("phasor vectorized: %f", phv.Generate())
+	err := plot.Plot(
+		fvec.New(phasor.New(1000.0, 44100.0, 0.0)),
+		1,
+		100,
+		vg.Centimeter*10, vg.Centimeter*5,
+		"points.png",
+	)
+	if err != nil {
+		t.Errorf("plot error: %v", err)
 	}
 }

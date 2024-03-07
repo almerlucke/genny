@@ -25,8 +25,8 @@ func NewContinuous[T any](values ...T) *Sequence[T] {
 	return s
 }
 
-// NextValue returns the next value in a sequence
-func (s *Sequence[T]) NextValue() T {
+// Generate returns the next value in a sequence
+func (s *Sequence[T]) Generate() T {
 	if s.done {
 		return s.values[len(s.values)-1]
 	}

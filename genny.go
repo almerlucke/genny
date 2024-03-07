@@ -1,8 +1,8 @@
 package genny
 
 type Generator[T any] interface {
-	// NextValue generates a value
-	NextValue() T
+	// Generate generates a value
+	Generate() T
 	// Continuous returns false if done and reset should be used,
 	// this allows for generators that can have an end state
 	Continuous() bool

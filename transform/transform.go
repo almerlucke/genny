@@ -29,8 +29,8 @@ func New[T any](gen genny.Generator[T], t Transformer[T]) *Transform[T] {
 	}
 }
 
-func (t *Transform[T]) NextValue() T {
-	return t.transformer.Transform(t.gen.NextValue())
+func (t *Transform[T]) Generate() T {
+	return t.transformer.Transform(t.gen.Generate())
 }
 
 func (t *Transform[T]) Continuous() bool {

@@ -42,7 +42,7 @@ func (m *Markov[T]) pushState(state State[T]) {
 	m.history[0] = state
 }
 
-func (m *Markov[T]) NextValue() (value T) {
+func (m *Markov[T]) Generate() (value T) {
 	if reflect.ValueOf(m.currentState).IsNil() {
 		return
 	}

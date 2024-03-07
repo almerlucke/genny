@@ -50,7 +50,7 @@ func NewContinuous[T any](sequence []T, mode Mode, mirrorMode MirrorMode, revers
 	return a
 }
 
-func (a *Arpeggio[T]) NextValue() T {
+func (a *Arpeggio[T]) Generate() T {
 	if a.done {
 		return a.values[a.pattern[len(a.pattern)-1]]
 	}

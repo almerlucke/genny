@@ -40,8 +40,8 @@ func NewContinuous[T any](mode Mode, values ...T) *Bucket[T] {
 	return b
 }
 
-// NextValue gets the next value from the bucket. If all values are fetched from the bucket return nil
-func (b *Bucket[T]) NextValue() T {
+// Generate gets the next value from the bucket. If all values are fetched from the bucket return nil
+func (b *Bucket[T]) Generate() T {
 	if b.mode == Random {
 		return b.values[rand.Intn(len(b.values))]
 	}

@@ -24,7 +24,7 @@ func New[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 		bucket: bucket.New(bucket.Mode(mode), gens...),
 	}
 
-	o.current = o.bucket.NextValue()
+	o.current = o.bucket.Generate()
 
 	return o
 }
@@ -34,15 +34,15 @@ func NewContinuous[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 		bucket: bucket.NewContinuous(bucket.Mode(mode), gens...),
 	}
 
-	o.current = o.bucket.NextValue()
+	o.current = o.bucket.Generate()
 
 	return o
 }
 
-func (o *Or[T]) NextValue() (value T) {
+func (o *Or[T]) Generate() (value T) {
 	gotoNext := false
 
-	value = o.current.NextValue()
+	value = o.current.Generate()
 
 	if o.current.Continuous() {
 		gotoNext = true
@@ -55,7 +55,7 @@ func (o *Or[T]) NextValue() (value T) {
 		if !o.bucket.Continuous() && o.bucket.Done() {
 			o.done = true
 		} else {
-			o.current = o.bucket.NextValue()
+			o.current = o.bucket.Generate()
 		}
 	}
 
@@ -73,7 +73,7 @@ func (o *Or[T]) Reset() {
 		g.Reset()
 	}
 
-	o.current = o.bucket.NextValue()
+	o.current = o.bucket.Generate()
 }
 
 func (o *Or[T]) Done() bool {

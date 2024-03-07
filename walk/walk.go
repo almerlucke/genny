@@ -64,8 +64,8 @@ func New[T any](container Container[T]) *Walk[T] {
 	return w
 }
 
-// NextValue for random walk
-func (w *Walk[T]) NextValue() T {
+// Generate for random walk
+func (w *Walk[T]) Generate() T {
 	dimensions := w.container.Dimensions()
 	selectedDimension := rand.Intn(len(dimensions))
 	selectedDimensionSize := dimensions[selectedDimension]

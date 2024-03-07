@@ -29,11 +29,11 @@ func NewContinuous[T any](gens ...genny.Generator[T]) *And[T] {
 	}
 }
 
-// NextValue from And, return next value from current generator, update based on continuous or not
-func (a *And[T]) NextValue() (value T) {
+// Generate from And, return next value from current generator, update based on continuous or not
+func (a *And[T]) Generate() (value T) {
 	gotoNext := false
 
-	value = a.current.NextValue()
+	value = a.current.Generate()
 
 	if a.current.Continuous() {
 		gotoNext = true

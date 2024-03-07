@@ -11,8 +11,8 @@ func New[T any](ctx any, f func(any) T) *Function[T] {
 	return &Function[T]{ctx: ctx, f: f}
 }
 
-// NextValue calls the internal function with ctx to generate a new value
-func (f *Function[T]) NextValue() T {
+// Generate calls the internal function with ctx to generate a new value
+func (f *Function[T]) Generate() T {
 	return f.f(f.ctx)
 }
 

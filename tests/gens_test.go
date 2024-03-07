@@ -36,17 +36,17 @@ func (sc *StringCaster) Cast(f float64) string {
 func TestGens(t *testing.T) {
 	var g genny.Generator[float64] = sequence.New(1.0, 2.0, 3.0)
 	for !g.Done() {
-		log.Printf("sequence: %f", g.NextValue())
+		log.Printf("sequence: %f", g.Generate())
 	}
 
 	g = function.New(nil, func(_ any) float64 { return rand.Float64() })
 	for i := 0; i < 10; i++ {
-		log.Printf("function: %f", g.NextValue())
+		log.Printf("function: %f", g.Generate())
 	}
 
 	g = repeat.NewWithFunc[float64](sequence.New(2.0, 3.0, 4.0), func() int { return 3 + rand.Intn(5) })
 	for !g.Done() {
-		log.Printf("repeat: %f", g.NextValue())
+		log.Printf("repeat: %f", g.Generate())
 	}
 
 	g = and.New[float64](
@@ -54,32 +54,32 @@ func TestGens(t *testing.T) {
 		repeat.New[float64](sequence.New(8.0, 9.0, 10.0), 4),
 	)
 	for !g.Done() {
-		log.Printf("and: %f", g.NextValue())
+		log.Printf("and: %f", g.Generate())
 	}
 
 	g = bucket.New(bucket.Random, 2.0, 3.0, 4.0, 5.0)
 	for i := 0; i < 10; i++ {
-		log.Printf("bucket random: %f", g.NextValue())
+		log.Printf("bucket random: %f", g.Generate())
 	}
 
 	g = bucket.NewContinuous(bucket.Indexed, 2.0, 3.0, 4.0, 5.0)
 	for i := 0; i < 10; i++ {
-		log.Printf("bucket indexed: %f", g.NextValue())
+		log.Printf("bucket indexed: %f", g.Generate())
 	}
 
 	g = or.New[float64](or.Indexed, sequence.New(2.0, 3.0, 4.0), sequence.New(12.0, 13.0, 14.0))
 	for !g.Done() {
-		log.Printf("or indexed: %f", g.NextValue())
+		log.Printf("or indexed: %f", g.Generate())
 	}
 
 	g = or.NewContinuous[float64](or.Indexed, sequence.NewContinuous(2.0, 3.0, 4.0), sequence.NewContinuous(12.0, 13.0, 14.0))
 	for i := 0; i < 20; i++ {
-		log.Printf("or indexed continuous: %f", g.NextValue())
+		log.Printf("or indexed continuous: %f", g.Generate())
 	}
 
 	g = flatten.NewFlatten[float64](sequence.New[[]float64]([]float64{1.0, 2.0, 3.0}, []float64{4.0, 5.0, 6.0}))
 	for !g.Done() {
-		log.Printf("flatten: %f", g.NextValue())
+		log.Printf("flatten: %f", g.Generate())
 	}
 
 	g = walk.New[float64](walk.NewMatrix(
@@ -90,13 +90,13 @@ func TestGens(t *testing.T) {
 			7.0, 8.0, 9.0,
 		}))
 	for i := 0; i < 10; i++ {
-		log.Printf("walk: %f", g.NextValue())
+		log.Printf("walk: %f", g.Generate())
 	}
 
 	var f transform.Function[float64] = func(v float64) float64 { return v + 12 }
 	g = transform.New[float64](sequence.New(2.0, 3.0, 4.0), f)
 	for !g.Done() {
-		log.Printf("transform: %f", g.NextValue())
+		log.Printf("transform: %f", g.Generate())
 	}
 
 	state1 := markov.NewProbabilityState(1.0)
@@ -109,37 +109,37 @@ func TestGens(t *testing.T) {
 	state4.SetProbabilities(state4, 0.1, nil, 0.9)
 	g = markov.New[float64](state1, 1)
 	for !g.Done() {
-		log.Printf("markov: %f", g.NextValue())
+		log.Printf("markov: %f", g.Generate())
 	}
 
 	g = arpeggio.New([]float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0}, arpeggio.Converge, arpeggio.Exclusive, false)
 	for !g.Done() {
-		log.Printf("arpeggio: %f", g.NextValue())
+		log.Printf("arpeggio: %f", g.Generate())
 	}
 
 	gsc := cast.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
 	for !gsc.Done() {
-		log.Printf("ramp + cast: %s", gsc.NextValue())
+		log.Printf("ramp + cast: %s", gsc.Generate())
 	}
 
 	g = continuous.New[float64](sequence.New(1.0, 2.0, 3.0, 4.0))
 	for i := 0; i < 10; i++ {
-		log.Printf("continuous: %f", g.NextValue())
+		log.Printf("continuous: %f", g.Generate())
 	}
 
 	gcm := combine.New[float64](sequence.New(1.0, 2.0, 3.0, 4.0), sequence.New(1.0, 2.0, 3.0, 4.0))
 	for !gcm.Done() {
-		log.Printf("combine: %v", gcm.NextValue())
+		log.Printf("combine: %v", gcm.Generate())
 	}
 
 	gg := unwrap.New[float64](sequence.New[genny.Generator[float64]](sequence.New(1.0, 2.0, 3.0), sequence.New(1.0, 2.0, 3.0)))
 	for !gg.Done() {
-		log.Printf("unwrap: %v", gg.NextValue())
+		log.Printf("unwrap: %v", gg.Generate())
 	}
 
 	it := iterator.New([]float64{0.1231}, chaos.NewVerhulstWithFunc(3.6951, chaos.Iter1))
 	ipol := interpolator.New(it, 1, interpolator.Linear, 0.1)
 	for i := 0; i < 100; i++ {
-		log.Printf("interpolator: %f", ipol.NextValue()[0])
+		log.Printf("interpolator: %f", ipol.Generate()[0])
 	}
 }

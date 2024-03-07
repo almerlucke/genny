@@ -12,8 +12,8 @@ func New[T any](value T) *Constant[T] {
 	}
 }
 
-// NextValue will always return the constant value
-func (c *Constant[T]) NextValue() T {
+// Generate will always return the constant value
+func (c *Constant[T]) Generate() T {
 	return c.value
 }
 

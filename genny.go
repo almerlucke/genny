@@ -3,11 +3,11 @@ package genny
 type Generator[T any] interface {
 	// Generate generates a value
 	Generate() T
-	// Continuous returns false if done and reset should be used,
+	// Continuous should return false if Done() and Reset() are used by this generator,
 	// this allows for generators that can have an end state
 	Continuous() bool
-	// Done checks if the generator is done generating values
+	// Done returns true if the generator is done generating values
 	Done() bool
-	// Reset the value generator
+	// Reset the generator
 	Reset()
 }

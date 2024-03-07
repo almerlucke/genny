@@ -8,8 +8,8 @@ import (
 type Mode bucket.Mode
 
 const (
-	Random  Mode = Mode(bucket.Random)
-	Indexed Mode = Mode(bucket.Indexed)
+	Random  = Mode(bucket.Random)
+	Indexed = Mode(bucket.Indexed)
 )
 
 // Or chooses one of the generators each cycle randomly or in bucket random mode (one by one)

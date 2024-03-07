@@ -15,7 +15,7 @@ func New[T any](gen genny.Generator[genny.Generator[T]]) *Unwrap[T] {
 	return u
 }
 
-// NextValue generate value from current or go to next current generator if available
+// Generate value from current or go to next current generator if available
 func (u *Unwrap[T]) Generate() T {
 	v := u.current.Generate()
 

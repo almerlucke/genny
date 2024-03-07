@@ -32,7 +32,7 @@ func (r *Ramp) Reset() {
 	r.done = false
 }
 
-// NextValue generates a ramp value, return false if end of ramp is reached
+// Generate generates a ramp value, return false if end of ramp is reached
 func (r *Ramp) Generate() (v float64) {
 	v = math.Pow(r.acc, r.exp)*r.dev + r.min
 

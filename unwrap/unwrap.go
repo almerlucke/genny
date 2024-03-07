@@ -10,20 +10,20 @@ type Unwrap[T any] struct {
 }
 
 func New[T any](gen genny.Generator[genny.Generator[T]]) *Unwrap[T] {
-	u := &Unwrap[T]{gen: gen, current: gen.NextValue()}
+	u := &Unwrap[T]{gen: gen, current: gen.Generate()}
 
 	return u
 }
 
 // NextValue generate value from current or go to next current generator if available
-func (u *Unwrap[T]) NextValue() T {
-	v := u.current.NextValue()
+func (u *Unwrap[T]) Generate() T {
+	v := u.current.Generate()
 
 	if u.current.Continuous() || u.current.Done() {
 		if u.gen.Done() {
 			u.done = true
 		} else {
-			u.current = u.gen.NextValue()
+			u.current = u.gen.Generate()
 		}
 	}
 

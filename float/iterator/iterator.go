@@ -24,7 +24,7 @@ func New(initValues []float64, updater Updater) *Iterator {
 	return iter
 }
 
-func (iter *Iterator) NextValue() []float64 {
+func (iter *Iterator) Generate() []float64 {
 	copy(iter.outVector, iter.values)
 	iter.updater.Update(iter.values)
 	return iter.outVector

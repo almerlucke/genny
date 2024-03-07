@@ -12,9 +12,9 @@ func New[T any](gen genny.Generator[T]) *Continuous[T] {
 	return &Continuous[T]{gen: gen}
 }
 
-// NextValue gets next value from wrapped generator and resets if generator is done
-func (c *Continuous[T]) NextValue() (value T) {
-	value = c.gen.NextValue()
+// Generate gets next value from wrapped generator and resets if generator is done
+func (c *Continuous[T]) Generate() (value T) {
+	value = c.gen.Generate()
 
 	if c.gen.Done() {
 		c.gen.Reset()

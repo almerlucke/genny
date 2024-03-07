@@ -62,21 +62,21 @@ func (ipol *Interpolator) SetDelta(dt float64) {
 func (ipol *Interpolator) initialize() {
 	switch ipol.method {
 	case Linear:
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][0] = v
 		}
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][1] = v
 		}
 	case Cubic:
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][0] = v
 			ipol.history[dim][1] = v
 		}
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][2] = v
 		}
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][3] = v
 		}
 	}
@@ -85,12 +85,12 @@ func (ipol *Interpolator) initialize() {
 func (ipol *Interpolator) updateHistory() {
 	switch ipol.method {
 	case Linear:
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][0] = ipol.history[dim][1]
 			ipol.history[dim][1] = v
 		}
 	case Cubic:
-		for dim, v := range ipol.generator.NextValue() {
+		for dim, v := range ipol.generator.Generate() {
 			ipol.history[dim][0] = ipol.history[dim][1]
 			ipol.history[dim][1] = ipol.history[dim][2]
 			ipol.history[dim][2] = ipol.history[dim][3]
@@ -114,7 +114,7 @@ func (ipol *Interpolator) interpolate(t float64) []float64 {
 	return ipol.outVector
 }
 
-func (ipol *Interpolator) NextValue() []float64 {
+func (ipol *Interpolator) Generate() []float64 {
 	out := ipol.interpolate(ipol.t)
 
 	ipol.t += ipol.dt

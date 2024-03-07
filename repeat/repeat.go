@@ -27,12 +27,12 @@ func NewWithFunc[T any](gen genny.Generator[T], f func() int) *Repeat[T] {
 	}
 }
 
-// NextValue generates the next value if n > 0, otherwise returns the last value generated
-func (r *Repeat[T]) NextValue() T {
+// Generate generates the next value if n > 0, otherwise returns the last value generated
+func (r *Repeat[T]) Generate() T {
 	v := r.lastVal
 
 	if r.n > 0 {
-		v = r.gen.NextValue()
+		v = r.gen.Generate()
 		r.lastVal = v
 		r.n--
 		if r.gen.Done() && r.n > 0 {

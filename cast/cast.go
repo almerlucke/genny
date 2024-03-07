@@ -18,9 +18,9 @@ func New[T1, T2 any](gen genny.Generator[T1], caster Caster[T1, T2]) *Cast[T1, T
 	return &Cast[T1, T2]{gen: gen, caster: caster}
 }
 
-// NextValue calls gen next value and casts it to T2
-func (c *Cast[T1, T2]) NextValue() T2 {
-	return c.caster.Cast(c.gen.NextValue())
+// Generate calls gen next value and casts it to T2
+func (c *Cast[T1, T2]) Generate() T2 {
+	return c.caster.Cast(c.gen.Generate())
 }
 
 // Continuous returns wrapped gen continuous

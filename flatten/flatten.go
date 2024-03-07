@@ -14,13 +14,13 @@ type Flatten[T any] struct {
 func NewFlatten[T any](gen genny.Generator[[]T]) *Flatten[T] {
 	f := &Flatten[T]{gen: gen}
 
-	f.current = gen.NextValue()
+	f.current = gen.Generate()
 
 	return f
 }
 
-// NextValue gets the next value from the current slice
-func (f *Flatten[T]) NextValue() (value T) {
+// Generate gets the next value from the current slice
+func (f *Flatten[T]) Generate() (value T) {
 	if f.Done() {
 		return
 	}
@@ -33,7 +33,7 @@ func (f *Flatten[T]) NextValue() (value T) {
 		if f.gen.Done() {
 			f.done = true
 		} else {
-			f.current = f.gen.NextValue()
+			f.current = f.gen.Generate()
 		}
 	}
 
@@ -48,7 +48,7 @@ func (f *Flatten[T]) Continuous() bool {
 // Reset the flattener
 func (f *Flatten[T]) Reset() {
 	f.gen.Reset()
-	f.current = f.gen.NextValue()
+	f.current = f.gen.Generate()
 	f.index = 0
 	f.done = false
 }

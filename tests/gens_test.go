@@ -10,7 +10,7 @@ import (
 	"github.com/almerlucke/genny/continuous"
 	"github.com/almerlucke/genny/convert"
 	"github.com/almerlucke/genny/flatten"
-	"github.com/almerlucke/genny/float/fvec"
+	"github.com/almerlucke/genny/float/conversions"
 	"github.com/almerlucke/genny/float/interpolator"
 	"github.com/almerlucke/genny/float/iterator"
 	"github.com/almerlucke/genny/float/iterator/updaters/chaos"
@@ -148,7 +148,7 @@ func TestGens(t *testing.T) {
 	}
 
 	err := plot.Plot(
-		fvec.New(phasor.New(1000.0, 44100.0, 0.0)),
+		conversions.ToVec(phasor.New(1000.0, 44100.0, 0.0)),
 		1,
 		100,
 		vg.Centimeter*10, vg.Centimeter*5,

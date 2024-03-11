@@ -1,4 +1,4 @@
-package iterator
+package iter
 
 type Updater interface {
 	Update([]float64)

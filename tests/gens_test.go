@@ -10,10 +10,10 @@ import (
 	"github.com/almerlucke/genny/continuous"
 	"github.com/almerlucke/genny/convert"
 	"github.com/almerlucke/genny/flatten"
-	"github.com/almerlucke/genny/float/conversions"
-	"github.com/almerlucke/genny/float/interpolator"
-	"github.com/almerlucke/genny/float/iterator"
-	"github.com/almerlucke/genny/float/iterator/updaters/chaos"
+	"github.com/almerlucke/genny/float/conv"
+	"github.com/almerlucke/genny/float/interp"
+	"github.com/almerlucke/genny/float/iter"
+	"github.com/almerlucke/genny/float/iter/updaters/chaos"
 	"github.com/almerlucke/genny/float/phasor"
 	"github.com/almerlucke/genny/float/plot"
 	"github.com/almerlucke/genny/float/ramp"
@@ -141,14 +141,14 @@ func TestGens(t *testing.T) {
 		log.Printf("unwrap: %v", gg.Generate())
 	}
 
-	it := iterator.New([]float64{0.1231}, chaos.NewVerhulstWithFunc(3.6951, chaos.Iter1))
-	ipol := interpolator.New(it, 1, interpolator.Linear, 0.1)
+	it := iter.New([]float64{0.1231}, chaos.NewVerhulstWithFunc(3.6951, chaos.Iter1))
+	ipol := interp.New(it, 1, interp.Linear, 0.1)
 	for i := 0; i < 100; i++ {
 		log.Printf("interpolator: %f", ipol.Generate()[0])
 	}
 
 	err := plot.Plot(
-		conversions.ToVec(phasor.New(1000.0, 44100.0, 0.0)),
+		conv.ToVec(phasor.New(1000.0, 44100.0, 0.0)),
 		1,
 		100,
 		vg.Centimeter*10, vg.Centimeter*5,

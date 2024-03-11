@@ -1,4 +1,4 @@
-package interpolator
+package interp
 
 import "github.com/almerlucke/genny"
 

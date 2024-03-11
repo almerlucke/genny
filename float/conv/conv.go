@@ -1,4 +1,4 @@
-package conversions
+package conv
 
 import (
 	"github.com/almerlucke/genny"

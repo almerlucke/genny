@@ -1,4 +1,4 @@
-package interpolate
+package interp
 
 import "github.com/almerlucke/genny/float/shape"
 

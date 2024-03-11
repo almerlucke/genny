@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/almerlucke/genny/float/conversions"
+	"github.com/almerlucke/genny/float/conv"
 	"github.com/almerlucke/genny/float/phasor"
 	"github.com/almerlucke/genny/float/plot"
 	"github.com/almerlucke/genny/float/shape"
@@ -12,7 +12,7 @@ import (
 
 func main() {
 	ph := phasor.New(1000, 44100.0, 0.0)
-	sh := shape.New(conversions.ToVec(ph), 1, lookup.NewSineTable(256))
+	sh := shape.New(conv.ToVec(ph), 1, lookup.NewSineTable(256))
 
 	err := plot.Plot(
 		sh,

@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/almerlucke/genny/float/conv"
+	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/float/phasor"
-	"github.com/almerlucke/genny/float/plot"
 	"github.com/almerlucke/genny/float/shape"
 	"github.com/almerlucke/genny/float/shape/shapers/lookup"
 	"gonum.org/v1/plot/vg"

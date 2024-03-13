@@ -2,7 +2,7 @@ package conv
 
 import (
 	"github.com/almerlucke/genny"
-	"github.com/almerlucke/genny/convert"
+	"github.com/almerlucke/genny/conv"
 )
 
 type vecConvert struct{}
@@ -12,8 +12,8 @@ func (c *vecConvert) Convert(v float64) []float64 {
 }
 
 // ToVec creates a conversion from a float64 generator to []float64
-func ToVec(g genny.Generator[float64]) *convert.Convert[float64, []float64] {
-	return convert.New[float64, []float64](g, &vecConvert{})
+func ToVec(g genny.Generator[float64]) *conv.Convert[float64, []float64] {
+	return conv.New[float64, []float64](g, &vecConvert{})
 }
 
 type floatConvert struct {
@@ -25,6 +25,6 @@ func (c *floatConvert) Convert(v []float64) float64 {
 }
 
 // FromVec creates a conversion from a []float64 generator to float64
-func FromVec(g genny.Generator[[]float64], channel int) *convert.Convert[[]float64, float64] {
-	return convert.New[[]float64, float64](g, &floatConvert{channel: channel})
+func FromVec(g genny.Generator[[]float64], channel int) *conv.Convert[[]float64, float64] {
+	return conv.New[[]float64, float64](g, &floatConvert{channel: channel})
 }

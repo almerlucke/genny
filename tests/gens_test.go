@@ -8,7 +8,7 @@ import (
 	"github.com/almerlucke/genny/bucket"
 	"github.com/almerlucke/genny/combine"
 	"github.com/almerlucke/genny/continuous"
-	"github.com/almerlucke/genny/convert"
+	"github.com/almerlucke/genny/conv"
 	"github.com/almerlucke/genny/flatten"
 	"github.com/almerlucke/genny/float/conv"
 	"github.com/almerlucke/genny/float/interp"
@@ -121,7 +121,7 @@ func TestGens(t *testing.T) {
 		log.Printf("arpeggio: %f", g.Generate())
 	}
 
-	gsc := convert.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
+	gsc := conv.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
 	for !gsc.Done() {
 		log.Printf("ramp + cast: %s", gsc.Generate())
 	}

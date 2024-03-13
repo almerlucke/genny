@@ -1,4 +1,4 @@
-package convert
+package conv
 
 import "github.com/almerlucke/genny"
 
@@ -36,4 +36,14 @@ func (c *Convert[T1, T2]) Done() bool {
 // Reset performs wrapped gen reset
 func (c *Convert[T1, T2]) Reset() {
 	c.gen.Reset()
+}
+
+type anyConvert[T any] struct{}
+
+func (ac *anyConvert[T]) Convert(t T) any {
+	return t
+}
+
+func ToAny[T any](g genny.Generator[T]) *Convert[T, any] {
+	return New[T, any](g, &anyConvert[T]{})
 }

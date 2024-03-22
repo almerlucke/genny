@@ -10,7 +10,7 @@ import (
 	"github.com/almerlucke/genny/continuous"
 	"github.com/almerlucke/genny/conv"
 	"github.com/almerlucke/genny/flatten"
-	"github.com/almerlucke/genny/float/conv"
+	"github.com/almerlucke/genny/float"
 	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/float/interp"
 	"github.com/almerlucke/genny/float/iter"
@@ -142,14 +142,13 @@ func TestGens(t *testing.T) {
 	}
 
 	it := iter.New([]float64{0.1231}, chaos.NewVerhulstWithFunc(3.6951, chaos.Iter1))
-	ipol := interp.New(it, 1, interp.Linear, 0.1)
+	ipol := interp.New(it, interp.Linear, 0.1)
 	for i := 0; i < 100; i++ {
 		log.Printf("interpolator: %f", ipol.Generate()[0])
 	}
 
 	err := plot.Plot(
-		conv.ToVec(phasor.New(1000.0, 44100.0, 0.0)),
-		1,
+		float.ToFrame(phasor.New(1000.0, 44100.0, 0.0)),
 		100,
 		vg.Centimeter*10, vg.Centimeter*5,
 		"points.png",

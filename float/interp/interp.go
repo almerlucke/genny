@@ -1,6 +1,8 @@
 package interp
 
-import "github.com/almerlucke/genny"
+import (
+	"github.com/almerlucke/genny/float"
+)
 
 type Method int
 
@@ -22,24 +24,24 @@ func (h interpolationHistory) interpolateCubic(t float64) float64 {
 }
 
 type Interpolator struct {
-	generator     genny.Generator[[]float64]
-	dt            float64
-	t             float64
-	method        Method
-	numDimensions int
-	history       []interpolationHistory
-	outVector     []float64
-	done          bool
+	generator float.FrameGenerator
+	dt        float64
+	t         float64
+	method    Method
+	history   []interpolationHistory
+	outVector []float64
+	done      bool
 }
 
-func New(generator genny.Generator[[]float64], numDimensions int, method Method, dt float64) *Interpolator {
+func New(generator float.FrameGenerator, method Method, dt float64) *Interpolator {
+	numDimensions := generator.Dimensions()
+
 	interpol := &Interpolator{
-		numDimensions: numDimensions,
-		generator:     generator,
-		dt:            dt,
-		method:        method,
-		history:       make([]interpolationHistory, numDimensions),
-		outVector:     make([]float64, numDimensions),
+		generator: generator,
+		dt:        dt,
+		method:    method,
+		history:   make([]interpolationHistory, numDimensions),
+		outVector: make([]float64, numDimensions),
 	}
 
 	for dim := 0; dim < numDimensions; dim++ {
@@ -51,8 +53,8 @@ func New(generator genny.Generator[[]float64], numDimensions int, method Method,
 	return interpol
 }
 
-func (ipol *Interpolator) NumDimensions() int {
-	return ipol.numDimensions
+func (ipol *Interpolator) Dimensions() int {
+	return ipol.generator.Dimensions()
 }
 
 func (ipol *Interpolator) SetDelta(dt float64) {
@@ -102,11 +104,11 @@ func (ipol *Interpolator) updateHistory() {
 func (ipol *Interpolator) interpolate(t float64) []float64 {
 	switch ipol.method {
 	case Linear:
-		for dim := 0; dim < ipol.numDimensions; dim++ {
+		for dim := 0; dim < ipol.Dimensions(); dim++ {
 			ipol.outVector[dim] = ipol.history[dim].interpolateLinear(t)
 		}
 	case Cubic:
-		for dim := 0; dim < ipol.numDimensions; dim++ {
+		for dim := 0; dim < ipol.Dimensions(); dim++ {
 			ipol.outVector[dim] = ipol.history[dim].interpolateCubic(t)
 		}
 	}
@@ -143,7 +145,7 @@ func (ipol *Interpolator) Reset() {
 	ipol.t = 0.0
 	ipol.done = false
 
-	for dim := 0; dim < ipol.numDimensions; dim++ {
+	for dim := 0; dim < ipol.Dimensions(); dim++ {
 		ipol.history[dim] = interpolationHistory{}
 	}
 

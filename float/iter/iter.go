@@ -24,6 +24,14 @@ func New(initValues []float64, updater Updater) *Iterator {
 	return iter
 }
 
+func (iter *Iterator) SetValues(vs []float64) {
+	copy(iter.values, vs)
+}
+
+func (iter *Iterator) Dimensions() int {
+	return len(iter.outVector)
+}
+
 func (iter *Iterator) Generate() []float64 {
 	copy(iter.outVector, iter.values)
 	iter.updater.Update(iter.values)

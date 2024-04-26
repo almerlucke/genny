@@ -31,9 +31,9 @@ func New[T any](mode Mode, values ...T) *Bucket[T] {
 	return b
 }
 
-// NewContinuous creates a continuous bucket from the given values and shuffles them randomly.
+// NewLoop creates a continuous bucket from the given values and shuffles them randomly.
 // NextValue can pick an element at random (Random mode) or one by one until the bucket is depleted (Indexed mode)
-func NewContinuous[T any](mode Mode, values ...T) *Bucket[T] {
+func NewLoop[T any](mode Mode, values ...T) *Bucket[T] {
 	b := New(mode, values...)
 	b.continuous = true
 

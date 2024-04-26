@@ -3,17 +3,27 @@ package function
 // Function is a generator that calls a func to generate next values, the function is passed a context
 type Function[T any] struct {
 	ctx any
-	f   func(any) T
+	cf  func(any) T
+	f   func() T
 }
 
 // New creates a new function generator
-func New[T any](ctx any, f func(any) T) *Function[T] {
-	return &Function[T]{ctx: ctx, f: f}
+func New[T any](f func() T) *Function[T] {
+	return &Function[T]{ctx: nil, f: f}
+}
+
+// NewWithContext creates a new function generator with context
+func NewWithContext[T any](ctx any, f func(any) T) *Function[T] {
+	return &Function[T]{ctx: ctx, cf: f}
 }
 
 // Generate calls the internal function with ctx to generate a new value
 func (f *Function[T]) Generate() T {
-	return f.f(f.ctx)
+	if f.ctx != nil {
+		return f.cf(f.ctx)
+	}
+
+	return f.f()
 }
 
 // Continuous will always return true for Function

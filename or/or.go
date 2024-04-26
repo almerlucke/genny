@@ -29,9 +29,9 @@ func New[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 	return o
 }
 
-func NewContinuous[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
+func NewLoop[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 	o := &Or[T]{
-		bucket: bucket.NewContinuous(bucket.Mode(mode), gens...),
+		bucket: bucket.NewLoop(bucket.Mode(mode), gens...),
 	}
 
 	o.current = o.bucket.Generate()

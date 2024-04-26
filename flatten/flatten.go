@@ -10,8 +10,8 @@ type Flatten[T any] struct {
 	done    bool
 }
 
-// NewFlatten creates a Flatten which flattens the output of a slice generator
-func NewFlatten[T any](gen genny.Generator[[]T]) *Flatten[T] {
+// New creates a Flatten which flattens the output of a slice generator
+func New[T any](gen genny.Generator[[]T]) *Flatten[T] {
 	f := &Flatten[T]{gen: gen}
 
 	f.current = gen.Generate()

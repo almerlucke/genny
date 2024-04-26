@@ -21,7 +21,7 @@ func New[T any](gens ...genny.Generator[T]) *And[T] {
 	}
 }
 
-func NewContinuous[T any](gens ...genny.Generator[T]) *And[T] {
+func NewLoop[T any](gens ...genny.Generator[T]) *And[T] {
 	return &And[T]{
 		gens:       gens,
 		continuous: true,

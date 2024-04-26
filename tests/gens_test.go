@@ -11,6 +11,7 @@ import (
 	"github.com/almerlucke/genny/conv"
 	"github.com/almerlucke/genny/flatten"
 	"github.com/almerlucke/genny/float"
+	"github.com/almerlucke/genny/float/envelopes/adsr"
 	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/float/interp"
 	"github.com/almerlucke/genny/float/iter"
@@ -38,12 +39,12 @@ func (sc *StringCaster) Convert(f float64) string {
 }
 
 func TestGens(t *testing.T) {
-	var g genny.Generator[float64] = sequence.New(1.0, 2.0, 3.0)
-	for !g.Done() {
+	var g genny.Generator[float64] = sequence.NewLoop(1.0, 2.0, 3.0)
+	for _ = range 10 {
 		log.Printf("sequence: %f", g.Generate())
 	}
 
-	g = function.New(nil, func(_ any) float64 { return rand.Float64() })
+	g = function.New(func() float64 { return rand.Float64() })
 	for i := 0; i < 10; i++ {
 		log.Printf("function: %f", g.Generate())
 	}
@@ -66,7 +67,7 @@ func TestGens(t *testing.T) {
 		log.Printf("bucket random: %f", g.Generate())
 	}
 
-	g = bucket.NewContinuous(bucket.Indexed, 2.0, 3.0, 4.0, 5.0)
+	g = bucket.NewLoop(bucket.Indexed, 2.0, 3.0, 4.0, 5.0)
 	for i := 0; i < 10; i++ {
 		log.Printf("bucket indexed: %f", g.Generate())
 	}
@@ -76,12 +77,12 @@ func TestGens(t *testing.T) {
 		log.Printf("or indexed: %f", g.Generate())
 	}
 
-	g = or.NewContinuous[float64](or.Indexed, sequence.NewContinuous(2.0, 3.0, 4.0), sequence.NewContinuous(12.0, 13.0, 14.0))
+	g = or.NewLoop[float64](or.Indexed, sequence.NewLoop(2.0, 3.0, 4.0), sequence.NewLoop(12.0, 13.0, 14.0))
 	for i := 0; i < 20; i++ {
 		log.Printf("or indexed continuous: %f", g.Generate())
 	}
 
-	g = flatten.NewFlatten[float64](sequence.New[[]float64]([]float64{1.0, 2.0, 3.0}, []float64{4.0, 5.0, 6.0}))
+	g = flatten.New[float64](sequence.New[[]float64]([]float64{1.0, 2.0, 3.0}, []float64{4.0, 5.0, 6.0}))
 	for !g.Done() {
 		log.Printf("flatten: %f", g.Generate())
 	}
@@ -97,8 +98,7 @@ func TestGens(t *testing.T) {
 		log.Printf("walk: %f", g.Generate())
 	}
 
-	var f transform.Function[float64] = func(v float64) float64 { return v + 12 }
-	g = transform.New[float64](sequence.New(2.0, 3.0, 4.0), f)
+	g = transform.New[float64](sequence.New(2.0, 3.0, 4.0), func(v float64) float64 { return v + 12 })
 	for !g.Done() {
 		log.Printf("transform: %f", g.Generate())
 	}
@@ -152,6 +152,20 @@ func TestGens(t *testing.T) {
 		100,
 		vg.Centimeter*10, vg.Centimeter*5,
 		"points.png",
+	)
+
+	adsrSetting := adsr.NewSetting(1.0, 10, 0.4, 10, 10.0, 10.0)
+	adsrSetting.DecayShape = -0.5
+	adsrSetting.AttackShape = 0.45
+	adsrSetting.ReleaseShape = -0.5
+	adsrEnv := adsr.New(adsrSetting, adsr.Automatic, 4000.0)
+	adsrEnv.Trigger(1.0)
+
+	err = plot.Plot(
+		float.ToFrame(adsrEnv),
+		400,
+		vg.Centimeter*10, vg.Centimeter*5,
+		"env.png",
 	)
 	if err != nil {
 		t.Errorf("plot error: %v", err)

@@ -22,7 +22,14 @@ type Transform[T any] struct {
 	transformer Transformer[T]
 }
 
-func New[T any](gen genny.Generator[T], t Transformer[T]) *Transform[T] {
+func New[T any](gen genny.Generator[T], f func(T) T) *Transform[T] {
+	return &Transform[T]{
+		gen:         gen,
+		transformer: Function[T](f),
+	}
+}
+
+func NewWithTransformer[T any](gen genny.Generator[T], t Transformer[T]) *Transform[T] {
 	return &Transform[T]{
 		gen:         gen,
 		transformer: t,

@@ -1,22 +1,19 @@
 package main
 
 import (
-	"github.com/almerlucke/genny"
-	"github.com/almerlucke/genny/conv"
-	"github.com/almerlucke/genny/sequence"
-	"github.com/almerlucke/genny/template"
 	"log"
+	"math/rand"
 )
 
 func main() {
-	var g genny.Generator[float64] = sequence.New(1.0, 2.0, 3.0)
-
-	t := template.Template{
-		"test": conv.ToAny(g),
+	n1 := 4
+	n2 := 5
+	dif := n2 + 1 - n1
+	f := func() int {
+		return rand.Intn(dif) + n1
 	}
 
-	for !t.Done() {
-		maps := t.Generate()
-		log.Printf("maps: %v", maps)
+	for _ = range 10 {
+		log.Printf("rand: %d", f())
 	}
 }

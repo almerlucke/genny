@@ -24,7 +24,7 @@ _testmain.go
 *.prof
 
 # Mac specific
-.DS_Store
+*.DS_Store
 
 # Environment files
 .env
@@ -34,3 +34,6 @@ _testmain.go
 
 # GoLand
 .idea/
+
+# Resources
+*.png

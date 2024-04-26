@@ -18,8 +18,8 @@ func New[T any](values ...T) *Sequence[T] {
 	}
 }
 
-// NewContinuous returns a new continuous (looping) sequence
-func NewContinuous[T any](values ...T) *Sequence[T] {
+// NewLoop returns a new continuous (looping) sequence
+func NewLoop[T any](values ...T) *Sequence[T] {
 	s := New(values...)
 	s.continuous = true
 	return s

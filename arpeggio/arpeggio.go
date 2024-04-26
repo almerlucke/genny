@@ -43,7 +43,7 @@ func New[T any](values []T, mode Mode, mirrorMode MirrorMode, reverse bool) *Arp
 	return a
 }
 
-func NewContinuous[T any](sequence []T, mode Mode, mirrorMode MirrorMode, reverse bool) *Arpeggio[T] {
+func NewLoop[T any](sequence []T, mode Mode, mirrorMode MirrorMode, reverse bool) *Arpeggio[T] {
 	a := New(sequence, mode, mirrorMode, reverse)
 	a.continuous = true
 

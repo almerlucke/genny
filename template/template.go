@@ -2,8 +2,6 @@ package template
 
 import (
 	"reflect"
-
-	"github.com/almerlucke/genny"
 )
 
 type Parameter struct {
@@ -65,14 +63,16 @@ func (t Template) intermediate() Template {
 		switch vt := v.(type) {
 		case Template:
 			tc[k] = vt.intermediate()
-		case genny.Generator[any]:
-			tc[k] = newIntermediateValue(vt.Generate())
 		case *Parameter:
 			tc[k] = newIntermediateValue(vt.Value)
 		case Parameter:
 			tc[k] = newIntermediateValue(vt.Value)
 		default:
-			tc[k] = v
+			if g, ok := generate(v); ok {
+				tc[k] = newIntermediateValue(g)
+			} else {
+				tc[k] = v
+			}
 		}
 	}
 
@@ -166,10 +166,8 @@ func (t Template) Continuous() bool {
 		switch vt := v.(type) {
 		case Template:
 			continuous = vt.Continuous()
-		case genny.Generator[any]:
-			continuous = vt.Continuous()
 		default:
-			break
+			continuous = boolForMethod(vt, "Continuous", true)
 		}
 
 		if !continuous {
@@ -185,10 +183,8 @@ func (t Template) Reset() {
 		switch vt := v.(type) {
 		case Template:
 			vt.Reset()
-		case genny.Generator[any]:
-			vt.Reset()
 		default:
-			break
+			reset(vt)
 		}
 	}
 }
@@ -200,14 +196,64 @@ func (t Template) Done() bool {
 			if vt.Done() {
 				return true
 			}
-		case genny.Generator[any]:
-			if vt.Done() {
+		default:
+			if boolForMethod(vt, "Done", false) {
 				return true
 			}
-		default:
-			break
 		}
 	}
 
 	return false
+}
+
+/*
+Reflective functions to call methods of Generator interface for any object that implements a type of
+Generator[T]
+*/
+func generate(va any) (any, bool) {
+	v := reflect.ValueOf(va)
+
+	m := v.MethodByName("Generate")
+	if !m.IsValid() {
+		return va, false
+	}
+
+	mt := m.Type()
+	if mt.NumIn() != 0 || mt.NumOut() != 1 {
+		return va, false
+	}
+
+	return m.Call(nil)[0].Interface(), true
+}
+
+func boolForMethod(va any, method string, defaultValue bool) bool {
+	v := reflect.ValueOf(va)
+
+	m := v.MethodByName(method)
+	if !m.IsValid() {
+		return defaultValue
+	}
+
+	mt := m.Type()
+	if mt.NumIn() != 0 || mt.NumOut() != 1 {
+		return defaultValue
+	}
+
+	return m.Call(nil)[0].Interface().(bool)
+}
+
+func reset(va any) {
+	v := reflect.ValueOf(va)
+
+	m := v.MethodByName("Reset")
+	if !m.IsValid() {
+		return
+	}
+
+	mt := m.Type()
+	if mt.NumIn() != 0 || mt.NumOut() != 0 {
+		return
+	}
+
+	_ = m.Call(nil)
 }

@@ -1,5 +1,7 @@
 package function
 
+import "math/rand"
+
 // Function is a generator that calls a func to generate next values, the function is passed a context
 type Function[T any] struct {
 	ctx any
@@ -15,6 +17,10 @@ func New[T any](f func() T) *Function[T] {
 // NewWithContext creates a new function generator with context
 func NewWithContext[T any](ctx any, f func(any) T) *Function[T] {
 	return &Function[T]{ctx: ctx, cf: f}
+}
+
+func NewRandom(low float64, high float64) *Function[float64] {
+	return New(func() float64 { return rand.Float64()*(high-low) + low })
 }
 
 // Generate calls the internal function with ctx to generate a new value

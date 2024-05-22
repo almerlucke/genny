@@ -16,6 +16,7 @@ import (
 	"github.com/almerlucke/genny/float/interp"
 	"github.com/almerlucke/genny/float/iter"
 	"github.com/almerlucke/genny/float/iter/updaters/chaos"
+	"github.com/almerlucke/genny/float/line"
 	"github.com/almerlucke/genny/float/phasor"
 	"github.com/almerlucke/genny/float/ramp"
 	"github.com/almerlucke/genny/function"
@@ -169,5 +170,15 @@ func TestGens(t *testing.T) {
 	)
 	if err != nil {
 		t.Errorf("plot error: %v", err)
+	}
+
+	l := line.New(10.0)
+	l.To(24, 12)
+	for !l.Done() {
+		log.Printf("line: %v", l.Generate())
+	}
+	l.To(12, 6)
+	for !l.Done() {
+		log.Printf("line: %v", l.Generate())
 	}
 }

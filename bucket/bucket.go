@@ -86,6 +86,13 @@ func (b *Bucket[T]) Values() []T {
 	return b.values
 }
 
+// SetValues changes the bucket values
+func (b *Bucket[T]) SetValues(vals []T) {
+	b.values = vals
+	b.index = 0
+	b.shuffle()
+}
+
 // shuffle all values randomly
 func (b *Bucket[T]) shuffle() {
 	rand.Shuffle(len(b.values), func(i, j int) {

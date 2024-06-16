@@ -1,6 +1,7 @@
 package shape
 
 import (
+	"github.com/almerlucke/genny"
 	"github.com/almerlucke/genny/float"
 )
 
@@ -44,3 +45,29 @@ func (s *Shape) Done() bool {
 }
 
 func (s *Shape) Reset() { s.gen.Reset() }
+
+type Single struct {
+	gen    genny.Generator[float64]
+	shaper Shaper
+}
+
+func NewSingle(gen genny.Generator[float64], shaper Shaper) *Single {
+	return &Single{
+		gen:    gen,
+		shaper: shaper,
+	}
+}
+
+func (s *Single) Generate() float64 {
+	return s.shaper.Shape(s.gen.Generate())
+}
+
+func (s *Single) Continuous() bool {
+	return s.gen.Continuous()
+}
+
+func (s *Single) Done() bool {
+	return s.gen.Done()
+}
+
+func (s *Single) Reset() { s.gen.Reset() }

@@ -30,3 +30,8 @@ func (c *Constant[T]) Done() bool {
 // Reset does nothing for a constant
 func (c *Constant[T]) Reset() {
 }
+
+// SetValue changes the constant value
+func (c *Constant[T]) SetValue(value T) {
+	c.value = value
+}

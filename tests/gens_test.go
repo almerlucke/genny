@@ -19,6 +19,7 @@ import (
 	"github.com/almerlucke/genny/float/line"
 	"github.com/almerlucke/genny/float/phasor"
 	"github.com/almerlucke/genny/float/ramp"
+	"github.com/almerlucke/genny/float/rwalk"
 	"github.com/almerlucke/genny/function"
 	"github.com/almerlucke/genny/markov"
 	"github.com/almerlucke/genny/or"
@@ -180,5 +181,27 @@ func TestGens(t *testing.T) {
 	l.To(12, 6)
 	for !l.Done() {
 		log.Printf("line: %v", l.Generate())
+	}
+
+	rw := rwalk.New(0.5, 0.0, 1.0, 0.1, rwalk.Bounce)
+	err = plot.Plot(
+		float.ToFrame(rw),
+		400,
+		vg.Centimeter*10, vg.Centimeter*5,
+		"rwalk.png",
+	)
+	if err != nil {
+		t.Errorf("plot error: %v", err)
+	}
+
+	ip := interp.New(float.ToFrame(function.NewRandom(0.0, 1.0)), interp.Linear, 0.001)
+	err = plot.Plot(
+		ip,
+		40000,
+		vg.Centimeter*10, vg.Centimeter*5,
+		"interp.png",
+	)
+	if err != nil {
+		t.Errorf("plot error: %v", err)
 	}
 }

@@ -78,6 +78,7 @@ func (b *Bucket[T]) Continuous() bool {
 // Reset the bucket
 func (b *Bucket[T]) Reset() {
 	b.index = 0
+	b.done = false
 	b.shuffle()
 }
 

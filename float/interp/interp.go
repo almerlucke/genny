@@ -123,9 +123,11 @@ func (ipol *Interpolator) Generate() []float64 {
 
 	if ipol.t >= 1.0 {
 		ipol.t -= 1.0
+
 		if !ipol.generator.Continuous() {
 			ipol.done = ipol.generator.Done()
 		}
+
 		ipol.updateHistory()
 	}
 

@@ -208,6 +208,7 @@ func (adsr *ADSR) Clear() {
 	adsr.from = 0.0
 	adsr.to = 0.0
 	adsr.lastOut = 0.0
+	adsr.stage = idle
 }
 
 func (adsr *ADSR) Continuous() bool {

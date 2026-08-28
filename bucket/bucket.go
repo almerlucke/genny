@@ -1,6 +1,8 @@
 package bucket
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type Mode int
 
@@ -19,11 +21,11 @@ type Bucket[T any] struct {
 }
 
 // New creates a bucket from the given values and shuffles them randomly.
-// NextValue can pick an element at random (Random mode) or one by one until the bucket is depleted (Indexed mode)
-func New[T any](mode Mode, values ...T) *Bucket[T] {
+// Generate can pick an element at random (Random mode) or one by one until the bucket is depleted (Indexed mode)
+func New[T any](values ...T) *Bucket[T] {
 	b := &Bucket[T]{
 		values: values,
-		mode:   mode,
+		mode:   Indexed,
 	}
 
 	b.shuffle()
@@ -31,11 +33,14 @@ func New[T any](mode Mode, values ...T) *Bucket[T] {
 	return b
 }
 
-// NewLoop creates a continuous bucket from the given values and shuffles them randomly.
-// NextValue can pick an element at random (Random mode) or one by one until the bucket is depleted (Indexed mode)
-func NewLoop[T any](mode Mode, values ...T) *Bucket[T] {
-	b := New(mode, values...)
-	b.continuous = true
+func NewLoop[T any](values ...T) *Bucket[T] {
+	b := &Bucket[T]{
+		values:     values,
+		mode:       Indexed,
+		continuous: true,
+	}
+
+	b.shuffle()
 
 	return b
 }
@@ -82,16 +87,29 @@ func (b *Bucket[T]) Reset() {
 	b.shuffle()
 }
 
+// SetMode set mode of bucket
+func (b *Bucket[T]) SetMode(mode Mode) *Bucket[T] {
+	b.mode = mode
+	return b
+}
+
+// Loop sets loop on or off
+func (b *Bucket[T]) Loop(loop bool) *Bucket[T] {
+	b.continuous = loop
+	return b
+}
+
 // Values returns bucket internal values slice
 func (b *Bucket[T]) Values() []T {
 	return b.values
 }
 
 // SetValues changes the bucket values
-func (b *Bucket[T]) SetValues(vals []T) {
+func (b *Bucket[T]) SetValues(vals []T) *Bucket[T] {
 	b.values = vals
 	b.index = 0
 	b.shuffle()
+	return b
 }
 
 // shuffle all values randomly

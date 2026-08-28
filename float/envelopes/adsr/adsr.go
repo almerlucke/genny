@@ -37,11 +37,11 @@ type Setting struct {
 	DecayLevel      float64
 	DecayDuration   float64
 	DecayShape      float64
-	SkipDecay       bool
 	SustainDuration float64
-	SkipSustain     bool
 	ReleaseDuration float64
 	ReleaseShape    float64
+	SkipDecay       bool
+	SkipSustain     bool
 }
 
 func NewSetting(attackLevel float64, attackDuration float64, decayLevel float64, decayDuration float64, sustainDuration float64, releaseDuration float64) *Setting {

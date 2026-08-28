@@ -21,7 +21,7 @@ type Or[T any] struct {
 
 func New[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 	o := &Or[T]{
-		bucket: bucket.New(bucket.Mode(mode), gens...),
+		bucket: bucket.New(gens...).SetMode(bucket.Mode(mode)),
 	}
 
 	o.current = o.bucket.Generate()
@@ -31,7 +31,7 @@ func New[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 
 func NewLoop[T any](mode Mode, gens ...genny.Generator[T]) *Or[T] {
 	o := &Or[T]{
-		bucket: bucket.NewLoop(bucket.Mode(mode), gens...),
+		bucket: bucket.New(gens...).Loop(true).SetMode(bucket.Mode(mode)),
 	}
 
 	o.current = o.bucket.Generate()

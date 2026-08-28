@@ -64,12 +64,12 @@ func TestGens(t *testing.T) {
 		log.Printf("and: %f", g.Generate())
 	}
 
-	g = bucket.New(bucket.Random, 2.0, 3.0, 4.0, 5.0)
+	g = bucket.New(2.0, 3.0, 4.0, 5.0).SetMode(bucket.Random)
 	for i := 0; i < 10; i++ {
 		log.Printf("bucket random: %f", g.Generate())
 	}
 
-	g = bucket.NewLoop(bucket.Indexed, 2.0, 3.0, 4.0, 5.0)
+	g = bucket.New(2.0, 3.0, 4.0, 5.0).Loop(true)
 	for i := 0; i < 10; i++ {
 		log.Printf("bucket indexed: %f", g.Generate())
 	}
@@ -123,8 +123,8 @@ func TestGens(t *testing.T) {
 		log.Printf("arpeggio: %f", g.Generate())
 	}
 
-	gsc := conv.New[float64, string](ramp.New(10, 0.0, 1.0, 2.0), &StringCaster{})
-	for !gsc.Done() {
+	gsc := conv.New[float64, string](ramp.NewForever(20, 0.0, 0.25, 1.0), &StringCaster{})
+	for i := 0; i < 24; i++ {
 		log.Printf("ramp + cast: %s", gsc.Generate())
 	}
 

@@ -22,6 +22,9 @@ const (
 
 const (
 	shapeMult = 2.0
+	// sustainGlide is how fast a held note follows a new sustain level, in seconds (fast, but
+	// without a click)
+	sustainGlide = 0.005
 )
 
 type step struct {
@@ -138,6 +141,8 @@ type ADSR struct {
 	ramp        float64
 	increment   float64
 	lastOut     float64
+	glideSr     float64 // the sample rate glideCoef is for
+	glideCoef   float64
 }
 
 func New(setting *Setting, releaseMode ReleaseMode, sr float64) *ADSR {
@@ -159,6 +164,30 @@ func (adsr *ADSR) exponentFromShape(shape float64, direction float64) float64 {
 	}
 
 	return 1.0 + math.Abs(shape)*shapeMult
+}
+
+// sustainLevel is the level of the sustain stage as the setting has it now
+func (setting *Setting) sustainLevel() float64 {
+	if setting.SkipDecay {
+		return setting.AttackLevel
+	}
+	return setting.DecayLevel
+}
+
+// sustain holds a note at the sustain level; a sustain level changed while it is held is glided to
+func (adsr *ADSR) sustain() float64 {
+	if adsr.glideSr != adsr.sr {
+		adsr.glideSr, adsr.glideCoef = adsr.sr, 1-math.Exp(-1/(sustainGlide*adsr.sr))
+	}
+	target := adsr.setting.sustainLevel()
+	if d := target - adsr.from; d != 0 {
+		if math.Abs(d) < 1e-6 {
+			adsr.from = target
+		} else {
+			adsr.from += d * adsr.glideCoef
+		}
+	}
+	return adsr.from
 }
 
 func (adsr *ADSR) nextStep(step step, useLastOut bool) {
@@ -237,7 +266,7 @@ func (adsr *ADSR) Generate() float64 {
 	}
 
 	if (adsr.releaseMode == NoteOff || adsr.releaseMode == Duration) && adsr.stage == sustain {
-		adsr.lastOut = adsr.from
+		adsr.lastOut = adsr.sustain()
 		goto output
 	}
 

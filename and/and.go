@@ -2,7 +2,6 @@ package and
 
 import (
 	"github.com/almerlucke/genny"
-	"math/rand"
 )
 
 // And is a sequence of Generators
@@ -76,7 +75,7 @@ func (a *And[T]) Reset() {
 
 // Randomize shuffles the generators randomly
 func (a *And[T]) Randomize() {
-	rand.Shuffle(len(a.gens), func(i, j int) {
+	genny.Shuffle(len(a.gens), func(i, j int) {
 		a.gens[i], a.gens[j] = a.gens[j], a.gens[i]
 	})
 }

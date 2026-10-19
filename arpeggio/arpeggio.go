@@ -1,6 +1,6 @@
 package arpeggio
 
-import "math/rand"
+import "github.com/almerlucke/genny"
 
 type Mode int
 
@@ -106,7 +106,7 @@ func (a *Arpeggio[T]) generatePattern() {
 		for i := 0; i < n; i++ {
 			pattern = append(pattern, i)
 		}
-		rand.Shuffle(len(pattern), func(i, j int) { pattern[i], pattern[j] = pattern[j], pattern[i] })
+		genny.Shuffle(len(pattern), func(i, j int) { pattern[i], pattern[j] = pattern[j], pattern[i] })
 	}
 
 	n = len(pattern)

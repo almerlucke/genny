@@ -1,7 +1,7 @@
 package markov
 
 import (
-	"math/rand"
+	"github.com/almerlucke/genny"
 )
 
 type ProbabilityState[T any] struct {
@@ -41,7 +41,7 @@ func (ps *ProbabilityState[T]) Value() T {
 }
 
 func (ps *ProbabilityState[T]) Next(_ []State[T]) (s State[T]) {
-	r := rand.Float64() * ps.total
+	r := genny.Float64() * ps.total
 	acc := 0.0
 
 	for index, probability := range ps.probabilities {

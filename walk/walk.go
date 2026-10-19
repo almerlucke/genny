@@ -1,6 +1,6 @@
 package walk
 
-import "math/rand"
+import "github.com/almerlucke/genny"
 
 // Container returns a value for an index and has dimensions
 type Container[T any] interface {
@@ -56,7 +56,7 @@ func New[T any](container Container[T]) *Walk[T] {
 	index := make([]int, len(dims))
 
 	for i, d := range dims {
-		index[i] = rand.Intn(d)
+		index[i] = genny.Intn(d)
 	}
 
 	w.index = index
@@ -67,7 +67,7 @@ func New[T any](container Container[T]) *Walk[T] {
 // Generate for random walk
 func (w *Walk[T]) Generate() T {
 	dimensions := w.container.Dimensions()
-	selectedDimension := rand.Intn(len(dimensions))
+	selectedDimension := genny.Intn(len(dimensions))
 	selectedDimensionSize := dimensions[selectedDimension]
 	selectedIndex := w.index[selectedDimension]
 
@@ -76,7 +76,7 @@ func (w *Walk[T]) Generate() T {
 	} else if selectedIndex > (selectedDimensionSize - 2) {
 		selectedIndex--
 	} else {
-		if rand.Intn(2) == 1 {
+		if genny.Intn(2) == 1 {
 			selectedIndex++
 		} else {
 			selectedIndex--

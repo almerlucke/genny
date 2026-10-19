@@ -1,7 +1,7 @@
 package rwalk
 
 import (
-	"math/rand"
+	"github.com/almerlucke/genny"
 )
 
 type Mode int
@@ -46,7 +46,7 @@ func (rw *RWalk) Done() bool {
 }
 
 func (rw *RWalk) Generate() float64 {
-	rw.current += (rand.Float64()*2 - 1) * rw.maxPct
+	rw.current += (genny.Float64()*2 - 1) * rw.maxPct
 
 	for {
 		if rw.current < rw.min {

@@ -2,7 +2,6 @@ package repeat
 
 import (
 	"github.com/almerlucke/genny"
-	"math/rand"
 )
 
 // Repeat can make a continuous generator non-continuous by only repeating NextValue() n times,
@@ -23,7 +22,7 @@ func New[T any](gen genny.Generator[T], n int) *Repeat[T] {
 func NewRand[T any](gen genny.Generator[T], n1 int, n2 int) *Repeat[T] {
 	dif := n2 + 1 - n1
 	return NewWithFunc[T](gen, func() int {
-		return n1 + rand.Intn(dif)
+		return n1 + genny.Intn(dif)
 	})
 }
 

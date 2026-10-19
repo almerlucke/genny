@@ -1,6 +1,6 @@
 package sequence
 
-import "math/rand"
+import "github.com/almerlucke/genny"
 
 // Sequence of values
 type Sequence[T any] struct {
@@ -61,7 +61,7 @@ func (s *Sequence[T]) Reset() {
 
 // Randomize shuffles the sequence values randomly
 func (s *Sequence[T]) Randomize() {
-	rand.Shuffle(len(s.values), func(i, j int) {
+	genny.Shuffle(len(s.values), func(i, j int) {
 		s.values[i], s.values[j] = s.values[j], s.values[i]
 	})
 }

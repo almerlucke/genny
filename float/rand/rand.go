@@ -1,6 +1,6 @@
 package rand
 
-import "math/rand"
+import "github.com/almerlucke/genny"
 
 type Rand struct {
 	low  float64
@@ -30,7 +30,7 @@ func (r *Rand) Generate() float64 {
 		low, high = high, low
 	}
 
-	return rand.Float64()*(high-low) + low
+	return genny.Float64()*(high-low) + low
 }
 
 func (r *Rand) Continuous() bool {

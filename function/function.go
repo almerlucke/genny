@@ -1,6 +1,6 @@
 package function
 
-import "math/rand"
+import "github.com/almerlucke/genny"
 
 // Function is a generator that calls a func to generate next values, the function is passed a context
 type Function[T any] struct {
@@ -20,7 +20,7 @@ func NewWithContext[T any](ctx any, f func(any) T) *Function[T] {
 }
 
 func NewRandom(low float64, high float64) *Function[float64] {
-	return New(func() float64 { return rand.Float64()*(high-low) + low })
+	return New(func() float64 { return genny.Float64()*(high-low) + low })
 }
 
 // Generate calls the internal function with ctx to generate a new value

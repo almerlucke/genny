@@ -1,7 +1,7 @@
 package bucket
 
 import (
-	"math/rand"
+	"github.com/almerlucke/genny"
 )
 
 type Mode int
@@ -48,7 +48,7 @@ func NewLoop[T any](values ...T) *Bucket[T] {
 // Generate gets the next value from the bucket. If all values are fetched from the bucket return nil
 func (b *Bucket[T]) Generate() T {
 	if b.mode == Random {
-		return b.values[rand.Intn(len(b.values))]
+		return b.values[genny.Intn(len(b.values))]
 	}
 
 	if b.done {
@@ -114,7 +114,7 @@ func (b *Bucket[T]) SetValues(vals []T) *Bucket[T] {
 
 // shuffle all values randomly
 func (b *Bucket[T]) shuffle() {
-	rand.Shuffle(len(b.values), func(i, j int) {
+	genny.Shuffle(len(b.values), func(i, j int) {
 		b.values[i], b.values[j] = b.values[j], b.values[i]
 	})
 }

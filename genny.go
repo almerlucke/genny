@@ -1,3 +1,6 @@
+// Package genny defines the Generator interface, a stream of values that can end and be reset, and the
+// seedable random stream (Seed, Float64, Intn, Shuffle) that all random generators in the sub packages
+// draw from.
 package genny
 
 import (

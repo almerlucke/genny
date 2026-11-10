@@ -34,15 +34,21 @@ type Scale struct {
 	period float64
 }
 
-// New creates a scale with an octave of 12 semitones. Steps must ascend and lie in [0, 12)
+// New creates a scale with an octave of 12 semitones. Steps must ascend and lie in [0, 12), see NewPeriod
 func New(root float64, steps []float64) *Scale {
 	return NewPeriod(root, steps, 12)
 }
 
-// NewPeriod creates a scale that repeats every period, for non-octave or microtonal scales
+// NewPeriod creates a scale that repeats every period, for non-octave or microtonal scales. It panics if
+// there are no steps, if the steps do not ascend strictly within [0, period), or if period is not positive
 func NewPeriod(root float64, steps []float64, period float64) *Scale {
-	if len(steps) == 0 {
-		steps = []float64{0}
+	if len(steps) == 0 || !(period > 0) {
+		panic("scale: a scale needs steps and a positive period")
+	}
+	for i, st := range steps {
+		if st < 0 || st >= period || (i > 0 && st <= steps[i-1]) {
+			panic("scale: steps must ascend strictly within [0, period)")
+		}
 	}
 	return &Scale{root: root, steps: append([]float64{}, steps...), period: period}
 }
@@ -125,8 +131,11 @@ type Walk struct {
 
 // NewWalk creates a walk starting at degree start and staying within degrees [lo, hi] (bouncing
 // off the edges). Every step moves 1..maxStep degrees up or down, with probability leapProb it is a
-// leap of maxStep+1..maxLeap degrees instead
+// leap of maxStep+1..maxLeap degrees instead. It panics if lo > hi or start is outside [lo, hi]
 func NewWalk(s *Scale, start, lo, hi, maxStep int, leapProb float64, maxLeap int) *Walk {
+	if lo > hi || start < lo || start > hi {
+		panic("scale: a walk needs lo <= start <= hi")
+	}
 	maxStep = max(maxStep, 1)
 	return &Walk{
 		scale: s, start: start, current: start, lo: lo, hi: hi,

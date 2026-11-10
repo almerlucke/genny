@@ -1,3 +1,4 @@
+// Package quantize provides Quantizer, a shaper that rounds its input to a multiple of a quantum.
 package quantize
 
 import "math"

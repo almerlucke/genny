@@ -1,3 +1,5 @@
+// Package parallel provides Parallel, a shaper that feeds its input to several shapers and folds the
+// outputs together with a function (a sum by default).
 package parallel
 
 import "github.com/almerlucke/genny/float/shape"

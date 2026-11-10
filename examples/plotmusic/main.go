@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 
@@ -12,13 +13,17 @@ import (
 	"github.com/almerlucke/genny/automaton"
 	"github.com/almerlucke/genny/chord"
 	"github.com/almerlucke/genny/euclid"
+	"github.com/almerlucke/genny/float/dist"
 	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/float/iter"
 	"github.com/almerlucke/genny/float/iter/updaters/chaos"
 	"github.com/almerlucke/genny/float/lfo"
+	"github.com/almerlucke/genny/float/lissajous"
 	"github.com/almerlucke/genny/float/noise"
 	"github.com/almerlucke/genny/float/rwalk"
+	"github.com/almerlucke/genny/groove"
 	"github.com/almerlucke/genny/mutate"
+	"github.com/almerlucke/genny/numseq"
 	"github.com/almerlucke/genny/progression"
 	"github.com/almerlucke/genny/scale"
 	"gonum.org/v1/plot/vg"
@@ -159,6 +164,29 @@ func main() {
 		func() float64 { return bars[step][2] },
 		func() float64 { return led[step][0] }, func() float64 { return led[step][1] },
 		func() float64 { s := led[step][2]; step++; return s })
+
+	// the accents of a bar of 7/8 (2+2+3) and of 4/4 in eighths
+	a78, a44 := groove.NewAccent(2, 2, 3), groove.NewAccent(2, 2, 2, 2)
+	lines(dir, "accent.png", "Accents", 28, []string{"7/8 (2+2+3)", "4/4 (2+2+2+2)"}, a78.Generate, a44.Generate)
+
+	// distributions
+	genny.Seed(7)
+	lines(dir, "distributions.png", "Gaussian and exponential", 100, []string{"gaussian(0, 1)", "exponential(1)"},
+		dist.NewGaussian(0, 1).Generate, dist.NewExponential(1).Generate)
+
+	// number sequences as pitch classes
+	fib, primes, tm := numseq.NewFibonacci(12), numseq.NewPrimes(), numseq.NewThueMorse()
+	lines(dir, "numseq.png", "Number sequences", 48, []string{"fibonacci mod 12", "primes mod 12", "thue-morse x 6"},
+		func() float64 { return float64(fib.Generate()) },
+		func() float64 { return float64(primes.Generate() % 12) },
+		func() float64 { return float64(tm.Generate() * 6) })
+
+	// a lissajous curve: its two outputs over time
+	err := plot.PlotX(lissajous.New(3, 2, math.Pi/2, 100), 200, "Lissajous 3:2", "step", "", []string{"x", "y"},
+		20*vg.Centimeter, 8*vg.Centimeter, path(dir, "lissajous.png"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("plots written to", dir)
 }

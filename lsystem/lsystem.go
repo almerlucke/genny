@@ -44,15 +44,13 @@ func values[T any](axiom string, rules map[rune]string, iterations int, mapping 
 		}
 	}
 	if len(vals) == 0 {
-		var zero T
-		vals = append(vals, zero)
+		panic("lsystem: no symbol of the expansion has a mapping")
 	}
 	return vals
 }
 
 // New expands the axiom and plays the symbols once, each symbol is turned into a value with mapping.
-// Symbols without a mapping (for instance structure symbols) are skipped. If nothing is left the
-// sequence is a single zero value
+// Symbols without a mapping (for instance structure symbols) are skipped. It panics if nothing is left
 func New[T any](axiom string, rules map[rune]string, iterations int, mapping map[rune]T) *sequence.Sequence[T] {
 	return sequence.New(values(axiom, rules, iterations, mapping)...)
 }

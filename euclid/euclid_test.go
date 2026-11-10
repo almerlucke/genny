@@ -68,3 +68,20 @@ func TestGeneratorLoops(t *testing.T) {
 		t.Errorf("got %s", str(got))
 	}
 }
+
+func TestInvalidSteps(t *testing.T) {
+	for _, f := range []func(){
+		func() { Pattern(0, 1, 0) },
+		func() { New(-3, 1, 0) },
+		func() { New(4, 1, 0).SetPattern(0, 0, 0) },
+	} {
+		func() {
+			defer func() {
+				if recover() == nil {
+					t.Error("steps < 1 should panic")
+				}
+			}()
+			f()
+		}()
+	}
+}

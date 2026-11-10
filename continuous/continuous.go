@@ -1,3 +1,5 @@
+// Package continuous provides Continuous, a wrapper that makes a generator with an end continuous by
+// resetting it when it is done.
 package continuous
 
 import "github.com/almerlucke/genny"

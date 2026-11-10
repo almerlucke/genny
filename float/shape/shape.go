@@ -1,3 +1,6 @@
+// Package shape defines the Shaper interface (a function from float64 to float64) and generators
+// (Shape for frames, Single for floats) that shape the output of another generator. Ready made shapers
+// live in the shapers sub packages.
 package shape
 
 import (
@@ -46,11 +49,13 @@ func (s *Shape) Done() bool {
 
 func (s *Shape) Reset() { s.gen.Reset() }
 
+// Single shapes the values of a Generator[float64]
 type Single struct {
 	gen    genny.Generator[float64]
 	shaper Shaper
 }
 
+// NewSingle creates a Single
 func NewSingle(gen genny.Generator[float64], shaper Shaper) *Single {
 	return &Single{
 		gen:    gen,

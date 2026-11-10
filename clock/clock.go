@@ -10,8 +10,13 @@ type Divider struct {
 }
 
 // NewDivider creates a divider that ticks when (step + offset) is a multiple of n. The first call
-// is step 0, so with offset 0 the first call ticks
-func NewDivider(n, offset int) *Divider { return &Divider{n: max(n, 1), offset: offset} }
+// is step 0, so with offset 0 the first call ticks. It panics if n is less than 1
+func NewDivider(n, offset int) *Divider {
+	if n < 1 {
+		panic("clock: divider n must be at least 1")
+	}
+	return &Divider{n: n, offset: offset}
+}
 
 func (d *Divider) Generate() bool {
 	t := ((d.step+d.offset)%d.n+d.n)%d.n == 0
@@ -34,13 +39,14 @@ type Poly struct {
 	step    int
 }
 
-// NewPoly creates a polyrhythm clock, one cycle for each length
+// NewPoly creates a polyrhythm clock, one cycle for each length. It panics if a length is less than 1
 func NewPoly(lengths ...int) *Poly {
-	l := make([]int, len(lengths))
-	for i, v := range lengths {
-		l[i] = max(v, 1)
+	for _, v := range lengths {
+		if v < 1 {
+			panic("clock: cycle length must be at least 1")
+		}
 	}
-	return &Poly{lengths: l, out: make([]bool, len(l))}
+	return &Poly{lengths: append([]int{}, lengths...), out: make([]bool, len(lengths))}
 }
 
 // Generate returns a slice reused between calls

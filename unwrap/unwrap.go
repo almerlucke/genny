@@ -1,3 +1,5 @@
+// Package unwrap provides Unwrap, which plays the generators produced by a generator of generators one
+// after the other.
 package unwrap
 
 import "github.com/almerlucke/genny"
@@ -9,6 +11,7 @@ type Unwrap[T any] struct {
 	done    bool
 }
 
+// New creates an Unwrap
 func New[T any](gen genny.Generator[genny.Generator[T]]) *Unwrap[T] {
 	u := &Unwrap[T]{gen: gen, current: gen.Generate()}
 
@@ -19,7 +22,13 @@ func New[T any](gen genny.Generator[genny.Generator[T]]) *Unwrap[T] {
 func (u *Unwrap[T]) Generate() T {
 	v := u.current.Generate()
 
-	if u.current.Continuous() || u.current.Done() {
+	currentDone := !u.current.Continuous() && u.current.Done()
+	if currentDone {
+		// ready for when this generator is played again
+		u.current.Reset()
+	}
+
+	if u.current.Continuous() || currentDone {
 		if u.gen.Done() {
 			u.done = true
 		} else {
@@ -43,4 +52,7 @@ func (u *Unwrap[T]) Done() bool {
 // Reset the generator
 func (u *Unwrap[T]) Reset() {
 	u.gen.Reset()
+	u.done = false
+	u.current = u.gen.Generate()
+	u.current.Reset()
 }

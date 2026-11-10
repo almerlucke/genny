@@ -1,3 +1,4 @@
+// Package ripple provides Ripple, a shaper that adds the remainder x mod M to x.
 package ripple
 
 import "math"

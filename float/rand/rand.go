@@ -1,12 +1,16 @@
+// Package rand provides Rand, a generator of uniformly distributed random floats between a low and a
+// high value.
 package rand
 
 import "github.com/almerlucke/genny"
 
+// Rand generates uniform random values between low and high
 type Rand struct {
 	low  float64
 	high float64
 }
 
+// New creates a Rand, low and high may be given in either order
 func New(low float64, high float64) *Rand {
 	return &Rand{
 		low:  low,

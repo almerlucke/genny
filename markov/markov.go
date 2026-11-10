@@ -1,18 +1,22 @@
+// Package markov provides Markov, a generator that walks a Markov chain of States. ProbabilityState is
+// a state that chooses its successor by weighted probability.
 package markov
 
-import (
-	"reflect"
-)
-
+// State is a state of a Markov chain.
 type State[T any] interface {
+	// Value is the value generated while in this state
 	Value() T
+	// Next chooses the next state, given the history (most recent state first). To end the chain
+	// Next must return an untyped nil (a plain `return nil`, not a nil pointer of a state type)
 	Next(history []State[T]) State[T]
 }
 
+// Starter chooses the first state, nil (untyped, see State.Next) gives a chain that is done at once
 type Starter[T any] interface {
 	Start(history []State[T]) State[T]
 }
 
+// Markov generates values by walking from state to state. It is done when a state has no next state
 type Markov[T any] struct {
 	history      []State[T]
 	historySize  int
@@ -20,6 +24,7 @@ type Markov[T any] struct {
 	currentState State[T]
 }
 
+// New creates a Markov chain, historySize is the number of past states passed to State.Next
 func New[T any](starter Starter[T], historySize int) *Markov[T] {
 	var history []State[T]
 
@@ -31,12 +36,11 @@ func New[T any](starter Starter[T], historySize int) *Markov[T] {
 	}
 }
 
-// isNil is true for a nil interface and for an interface holding a nil pointer
-func isNil[T any](s State[T]) bool {
-	return s == nil || reflect.ValueOf(s).IsNil()
-}
-
 func (m *Markov[T]) pushState(state State[T]) {
+	if m.historySize <= 0 {
+		return
+	}
+
 	if len(m.history) < m.historySize {
 		m.history = append([]State[T]{state}, m.history...)
 		return
@@ -48,7 +52,7 @@ func (m *Markov[T]) pushState(state State[T]) {
 }
 
 func (m *Markov[T]) Generate() (value T) {
-	if isNil(m.currentState) {
+	if m.currentState == nil {
 		return
 	}
 
@@ -67,8 +71,9 @@ func (m *Markov[T]) Continuous() bool {
 	return false
 }
 
+// Done is true when the chain has ended
 func (m *Markov[T]) Done() bool {
-	return isNil(m.currentState)
+	return m.currentState == nil
 }
 
 func (m *Markov[T]) Reset() {

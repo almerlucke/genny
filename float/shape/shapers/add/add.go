@@ -1,3 +1,4 @@
+// Package add provides Add, a shaper that adds a constant to its input.
 package add
 
 type Add struct {

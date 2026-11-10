@@ -18,3 +18,14 @@ func ExampleSwing() {
 	// step 2 at 2.000
 	// step 3 at 3.333
 }
+
+// Velocities for a bar of 7/8 in groups of 2+2+3 eighths: the downbeat is strongest, the other
+// groups get a medium accent
+func ExampleAccent() {
+	a := groove.NewAccent(2, 2, 3)
+	for range 7 {
+		fmt.Print(a.Generate(), " ")
+	}
+	fmt.Println()
+	// Output: 1 0.55 0.8 0.55 0.8 0.55 0.55
+}

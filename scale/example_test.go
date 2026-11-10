@@ -51,3 +51,23 @@ func ExampleWalk() {
 	fmt.Println()
 	// Output: 71 69 62 64 62 64 62 60 62 60
 }
+
+// Just intonation: the major third is the pure 5/4, a bit lower than the equal tempered 4 semitones
+func ExampleFromRatios() {
+	justMajorChord := scale.FromRatios(60, 1, 5.0/4, 3.0/2)
+	for _, d := range []int{0, 1, 2} {
+		fmt.Printf("%.3f ", justMajorChord.Degree(d))
+	}
+	fmt.Println()
+	// Output: 60.000 63.863 67.020
+}
+
+// Quarter tones: the pitches are in fractional semitones
+func ExampleEqual() {
+	q := scale.Equal(60, 24)
+	for _, p := range []float64{60.2, 60.4, 60.9, 61.3} {
+		fmt.Print(q.Quantize(p), " ")
+	}
+	fmt.Println()
+	// Output: 60 60.5 61 61.5
+}

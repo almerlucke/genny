@@ -1,3 +1,4 @@
+// Package mult provides Mult, a shaper that multiplies its input by a constant.
 package mult
 
 type Mult struct {

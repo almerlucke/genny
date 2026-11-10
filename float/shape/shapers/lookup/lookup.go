@@ -1,3 +1,5 @@
+// Package lookup provides Table, a shaper that linearly interpolates in a lookup table indexed by an
+// input between 0 and 1, with constructors for common waveforms.
 package lookup
 
 import (
@@ -17,6 +19,10 @@ const (
 )
 
 func NewWithFunc(n int, fillMode FillMode, f func(int, int) float64, last ...float64) Table {
+	if n < 1 {
+		return Table{0}
+	}
+
 	table := make(Table, n+1)
 
 	for i := 0; i < n; i++ {
@@ -99,6 +105,16 @@ func NewUniSquareTable(n int) Table {
 }
 
 func (t Table) Shape(x float64) float64 {
+	if len(t) == 0 {
+		return 0
+	}
+	if len(t) == 1 || !(x > 0) {
+		return t[0]
+	}
+	if x >= 1 {
+		return t[len(t)-1]
+	}
+
 	nf := x * float64(len(t)-1)
 	n1 := int(nf)
 	t1 := t[n1]

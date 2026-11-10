@@ -2,10 +2,11 @@
 package euclid
 
 // Pattern returns the Euclidean rhythm (Bjorklund) for the given number of pulses spread over steps.
-// The pattern is rotated left by rotation steps (negative rotates right). Pulses are clamped to [0, steps]
+// The pattern is rotated left by rotation steps (negative rotates right). Pulses are clamped to [0, steps].
+// It panics if steps is less than 1
 func Pattern(steps, pulses, rotation int) []bool {
 	if steps < 1 {
-		steps = 1
+		panic("euclid: steps must be at least 1")
 	}
 	pulses = min(max(pulses, 0), steps)
 

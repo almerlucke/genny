@@ -1,3 +1,6 @@
+// Package supersaw provides SuperSaw, a shaper that approximates the JP-8000 supersaw: its input is
+// multiplied, the two remainders modulo m1 and m2 are summed, passed through math.Sin (radians)
+// and scaled by 2x-1.
 package supersaw
 
 import (

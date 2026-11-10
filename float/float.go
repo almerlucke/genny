@@ -1,3 +1,5 @@
+// Package float defines FrameGenerator, a generator of []float64 frames with a fixed number of
+// dimensions, and converts between frame generators and Generator[float64] (ToFrame, FromFrame).
 package float
 
 import (

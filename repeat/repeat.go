@@ -1,3 +1,5 @@
+// Package repeat provides Repeat, a wrapper that repeats a generator a number of times, which gives a
+// continuous generator an end or extends a generator with an end.
 package repeat
 
 import (
@@ -20,6 +22,9 @@ func New[T any](gen genny.Generator[T], n int) *Repeat[T] {
 
 // NewRand creates a new repeat generator that repeats randomly between n1 and n2 times
 func NewRand[T any](gen genny.Generator[T], n1 int, n2 int) *Repeat[T] {
+	if n2 < n1 {
+		n1, n2 = n2, n1
+	}
 	dif := n2 + 1 - n1
 	return NewWithFunc[T](gen, func() int {
 		return n1 + genny.Intn(dif)
@@ -62,9 +67,9 @@ func (r *Repeat[T]) Continuous() bool {
 	return false
 }
 
-// Done is true if n == 0
+// Done is true if n <= 0
 func (r *Repeat[T]) Done() bool {
-	return r.n == 0
+	return r.n <= 0
 }
 
 // Reset the Repeat generator, n is calculated again by calling f()

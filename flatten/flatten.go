@@ -1,3 +1,5 @@
+// Package flatten provides Flatten, which turns a generator of slices into a generator of the single
+// values in those slices.
 package flatten
 
 import "github.com/almerlucke/genny"
@@ -14,7 +16,7 @@ type Flatten[T any] struct {
 func New[T any](gen genny.Generator[[]T]) *Flatten[T] {
 	f := &Flatten[T]{gen: gen}
 
-	f.current = gen.Generate()
+	f.load()
 
 	return f
 }
@@ -33,7 +35,7 @@ func (f *Flatten[T]) Generate() (value T) {
 		if f.gen.Done() {
 			f.done = true
 		} else {
-			f.current = f.gen.Generate()
+			f.load()
 		}
 	}
 
@@ -48,9 +50,24 @@ func (f *Flatten[T]) Continuous() bool {
 // Reset the flattener
 func (f *Flatten[T]) Reset() {
 	f.gen.Reset()
-	f.current = f.gen.Generate()
 	f.index = 0
 	f.done = false
+	f.load()
+}
+
+// load fetches the next non-empty slice from the source, empty slices are skipped. When the source
+// is done without a non-empty slice, f is done
+func (f *Flatten[T]) load() {
+	for {
+		f.current = f.gen.Generate()
+		if len(f.current) > 0 {
+			return
+		}
+		if f.gen.Done() {
+			f.done = true
+			return
+		}
+	}
 }
 
 // Done checks if Flatten is done

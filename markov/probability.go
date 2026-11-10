@@ -4,6 +4,7 @@ import (
 	"github.com/almerlucke/genny"
 )
 
+// ProbabilityState is a State that picks its successor by weighted probability
 type ProbabilityState[T any] struct {
 	value         T
 	states        []*ProbabilityState[T]
@@ -11,12 +12,15 @@ type ProbabilityState[T any] struct {
 	total         float64
 }
 
+// NewProbabilityState creates a state with value v and no successors
 func NewProbabilityState[T any](v T) *ProbabilityState[T] {
 	return &ProbabilityState[T]{
 		value: v,
 	}
 }
 
+// SetProbabilities sets the states that can follow, as pairs of a *ProbabilityState (nil to end the chain)
+// and a float64 weight
 func (ps *ProbabilityState[T]) SetProbabilities(statesAndProbs ...any) {
 	numStates := len(statesAndProbs) / 2
 	states := make([]*ProbabilityState[T], numStates)
@@ -40,19 +44,22 @@ func (ps *ProbabilityState[T]) Value() T {
 	return ps.value
 }
 
-func (ps *ProbabilityState[T]) Next(_ []State[T]) (s State[T]) {
+// Next picks the next state by probability. A nil state ends the chain, so do states without probabilities
+func (ps *ProbabilityState[T]) Next(_ []State[T]) State[T] {
 	r := genny.Float64() * ps.total
 	acc := 0.0
 
 	for index, probability := range ps.probabilities {
 		acc += probability
 		if r < acc {
-			s = ps.states[index]
-			break
+			if next := ps.states[index]; next != nil {
+				return next
+			}
+			return nil
 		}
 	}
 
-	return
+	return nil
 }
 
 func (ps *ProbabilityState[T]) Start(_ []State[T]) State[T] {

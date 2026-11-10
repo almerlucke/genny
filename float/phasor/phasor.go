@@ -1,5 +1,8 @@
+// Package phasor provides Phasor, a generator of a sawtooth phase that rises from 0 to 1 and wraps
+// around, at a frequency relative to a sample rate.
 package phasor
 
+// Phasor generates a phase in [0, 1) that increases by fc/fs per value
 type Phasor struct {
 	startPhase float64
 	phase      float64
@@ -7,6 +10,7 @@ type Phasor struct {
 	fs         float64
 }
 
+// New creates a phasor with frequency fc at sample rate fs, starting at phase
 func New(fc float64, fs float64, phase float64) *Phasor {
 	return &Phasor{
 		startPhase: phase,

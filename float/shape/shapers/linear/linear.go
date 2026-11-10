@@ -1,3 +1,5 @@
+// Package linear provides Linear, a shaper that scales and shifts its input (x*Scale+Shift), including
+// the unipolar and bipolar conversions.
 package linear
 
 type Linear struct {

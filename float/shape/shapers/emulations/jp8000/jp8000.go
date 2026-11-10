@@ -1,3 +1,5 @@
+// Package jp8000 provides TriMod, a shaper that emulates the triangle modulation waveform of the
+// Roland JP-8000.
 package jp8000
 
 import (

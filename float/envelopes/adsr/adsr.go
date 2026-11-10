@@ -1,3 +1,5 @@
+// Package adsr provides ADSR, an attack, decay, sustain, release envelope generator driven by a
+// Setting, with automatic, timed or note-off release.
 package adsr
 
 import "math"

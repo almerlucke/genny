@@ -1,3 +1,5 @@
+// Package softsync provides Triangle, a shaper that emulates soft sync with a triangle wave from a
+// phase between 0 and 1.
 package softsync
 
 import (

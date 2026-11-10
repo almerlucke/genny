@@ -31,6 +31,11 @@ func New[T any](starter Starter[T], historySize int) *Markov[T] {
 	}
 }
 
+// isNil is true for a nil interface and for an interface holding a nil pointer
+func isNil[T any](s State[T]) bool {
+	return s == nil || reflect.ValueOf(s).IsNil()
+}
+
 func (m *Markov[T]) pushState(state State[T]) {
 	if len(m.history) < m.historySize {
 		m.history = append([]State[T]{state}, m.history...)
@@ -43,7 +48,7 @@ func (m *Markov[T]) pushState(state State[T]) {
 }
 
 func (m *Markov[T]) Generate() (value T) {
-	if reflect.ValueOf(m.currentState).IsNil() {
+	if isNil(m.currentState) {
 		return
 	}
 
@@ -63,7 +68,7 @@ func (m *Markov[T]) Continuous() bool {
 }
 
 func (m *Markov[T]) Done() bool {
-	return reflect.ValueOf(m.currentState).IsNil()
+	return isNil(m.currentState)
 }
 
 func (m *Markov[T]) Reset() {

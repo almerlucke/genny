@@ -59,3 +59,26 @@ func TestResetUnipolarAndSeed(t *testing.T) {
 		t.Error("reset")
 	}
 }
+
+// a single octave uses the range: weak gradients used to keep it near +-0.6
+func TestUsesTheRange(t *testing.T) {
+	genny.Seed(1)
+	n := New(0.01, 1)
+	lo, hi := 0.0, 0.0
+	for range 100000 {
+		v := n.Generate()
+		lo, hi = min(lo, v), max(hi, v)
+	}
+	if lo > -0.9 || hi < 0.9 || lo < -1 || hi > 1 {
+		t.Errorf("range [%v, %v]", lo, hi)
+	}
+}
+
+func TestOctavesMustBePositive(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Error("0 octaves should panic")
+		}
+	}()
+	New(0.1, 0)
+}

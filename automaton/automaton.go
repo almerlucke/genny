@@ -14,27 +14,27 @@ type Automaton struct {
 	out   []bool
 }
 
-// New creates an automaton of width cells with one live cell in the middle
+// New creates an automaton of width cells with one live cell in the middle. It panics if width is less than 1
 func New(rule uint8, width int) *Automaton {
-	cells := make([]bool, max(width, 1))
+	checkWidth(width)
+	cells := make([]bool, width)
 	cells[len(cells)/2] = true
 	return NewWithCells(rule, cells)
 }
 
-// NewRandom creates an automaton with random start cells
+// NewRandom creates an automaton with random start cells. It panics if width is less than 1
 func NewRandom(rule uint8, width int) *Automaton {
-	cells := make([]bool, max(width, 1))
+	checkWidth(width)
+	cells := make([]bool, width)
 	for i := range cells {
 		cells[i] = genny.Float64() < 0.5
 	}
 	return NewWithCells(rule, cells)
 }
 
-// NewWithCells creates an automaton with the given start cells
+// NewWithCells creates an automaton with the given start cells. It panics if there are no cells
 func NewWithCells(rule uint8, cells []bool) *Automaton {
-	if len(cells) == 0 {
-		cells = []bool{true}
-	}
+	checkWidth(len(cells))
 	a := &Automaton{
 		rule:  rule,
 		init:  append([]bool{}, cells...),
@@ -43,6 +43,12 @@ func NewWithCells(rule uint8, cells []bool) *Automaton {
 		out:   make([]bool, len(cells)),
 	}
 	return a
+}
+
+func checkWidth(width int) {
+	if width < 1 {
+		panic("automaton: width must be at least 1")
+	}
 }
 
 // Width is the number of cells

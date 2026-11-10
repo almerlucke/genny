@@ -1,3 +1,5 @@
+// Package pwmod provides PWMod, a shaper that emulates pulse width modulation from a phase between 0
+// and 1.
 package pwmod
 
 import (

@@ -1,3 +1,4 @@
+// Package route provides Route, a shaper that passes its input to one selected shaper out of several.
 package route
 
 import "github.com/almerlucke/genny/float/shape"

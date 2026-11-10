@@ -1,3 +1,4 @@
+// Package pulse provides Pulse, a shaper that gives 1 below a width W and 0 otherwise.
 package pulse
 
 type Pulse struct {

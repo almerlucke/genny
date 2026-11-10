@@ -1,3 +1,4 @@
+// Package thru provides Thru, a shaper that returns its input unchanged.
 package thru
 
 type Thru struct {

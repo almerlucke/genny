@@ -1,3 +1,5 @@
+// Package plot renders the output of a FrameGenerator to a plot (using gonum plot), one line per
+// dimension.
 package plot
 
 import (

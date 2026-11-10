@@ -1,12 +1,16 @@
+// Package transform provides Transform, a wrapper that applies a function or Transformer to every
+// value of a generator.
 package transform
 
 import "github.com/almerlucke/genny"
 
+// Transformer transforms values, Reset is called when the Transform is reset
 type Transformer[T any] interface {
 	Transform(T) T
 	Reset()
 }
 
+// Function is a Transformer without state
 type Function[T any] func(T) T
 
 func (f Function[T]) Transform(v T) T {
@@ -22,6 +26,7 @@ type Transform[T any] struct {
 	transformer Transformer[T]
 }
 
+// New creates a Transform from a function
 func New[T any](gen genny.Generator[T], f func(T) T) *Transform[T] {
 	return &Transform[T]{
 		gen:         gen,

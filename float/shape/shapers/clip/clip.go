@@ -1,3 +1,5 @@
+// Package clip provides Clip, a shaper that limits its input with a hard clip between a low and a high
+// value or a soft (arctan) clip.
 package clip
 
 import "math"

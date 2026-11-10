@@ -20,5 +20,5 @@ func Example() {
 		fmt.Print(melody.Generate(), " ")
 	}
 	fmt.Println()
-	// Output: 64 60 62 64 64 62 60 57 57 60 62 64
+	// Output: 62 59 53 55 59 62 65 71 69 65 62 59
 }

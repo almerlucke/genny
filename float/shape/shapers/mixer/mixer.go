@@ -1,3 +1,4 @@
+// Package mixer provides Mixer, a shaper that sums the output of several shapers, each with a level.
 package mixer
 
 import "github.com/almerlucke/genny/float/shape"

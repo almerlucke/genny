@@ -97,3 +97,12 @@ func TestSlew(t *testing.T) {
 		}
 	}
 }
+
+func TestInvalidSampleRate(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Error("fs 0 should panic")
+		}
+	}()
+	New(Sine, 1, 0)
+}

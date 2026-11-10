@@ -39,3 +39,19 @@ func TestPoly(t *testing.T) {
 		t.Errorf("realigned %d times in 24 steps", both)
 	}
 }
+
+func TestInvalid(t *testing.T) {
+	for name, f := range map[string]func(){
+		"divider 0":     func() { NewDivider(0, 0) },
+		"poly length 0": func() { NewPoly(3, 0) },
+	} {
+		func() {
+			defer func() {
+				if recover() == nil {
+					t.Errorf("%s should panic", name)
+				}
+			}()
+			f()
+		}()
+	}
+}

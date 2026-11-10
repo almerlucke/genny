@@ -70,3 +70,55 @@ func Jitter(gen genny.Generator[float64], amount float64) *transform.Transform[f
 		return v + (genny.Float64()*2-1)*amount
 	})
 }
+
+// Accent generates velocities (accents) that follow the beat groups of a meter: the first step of the bar is
+// the strongest, the first step of every other group is medium and the rest are weak
+type Accent struct {
+	groups             []int
+	down, group, other float64
+	current, offset    int // the beat group and the step in it
+}
+
+// NewAccent creates an accent generator for a bar with groups of steps: 7/8 as (2, 2, 3), 3/4 as 4 groups of
+// (4, 4, 4) sixteenths, 4/4 in eighths as (2, 2, 2, 2). Levels default to 1, 0.8 and 0.55, see Levels.
+// It panics if there are no groups or a group is shorter than 1
+func NewAccent(groups ...int) *Accent {
+	if len(groups) == 0 {
+		panic("groove: an accent needs beat groups")
+	}
+	for _, g := range groups {
+		if g < 1 {
+			panic("groove: a beat group must be at least 1 step")
+		}
+	}
+	return &Accent{groups: append([]int{}, groups...), down: 1, group: 0.8, other: 0.55}
+}
+
+// Levels sets the velocity of the first step of the bar, of the first step of the other groups, and of all other steps
+func (a *Accent) Levels(downbeat, group, other float64) *Accent {
+	a.down, a.group, a.other = downbeat, group, other
+	return a
+}
+
+func (a *Accent) Generate() float64 {
+	v := a.other
+	if a.offset == 0 {
+		v = a.group
+		if a.current == 0 {
+			v = a.down
+		}
+	}
+
+	a.offset++
+	if a.offset >= a.groups[a.current] {
+		a.offset = 0
+		a.current = (a.current + 1) % len(a.groups)
+	}
+	return v
+}
+
+func (a *Accent) Continuous() bool { return true }
+
+func (a *Accent) Done() bool { return false }
+
+func (a *Accent) Reset() { a.current, a.offset = 0, 0 }

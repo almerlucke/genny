@@ -77,3 +77,20 @@ func TestRandomStartIsSeeded(t *testing.T) {
 		t.Error("not repeatable")
 	}
 }
+
+func TestInvalidWidth(t *testing.T) {
+	for name, f := range map[string]func(){
+		"New":          func() { New(30, 0) },
+		"NewRandom":    func() { NewRandom(30, -1) },
+		"NewWithCells": func() { NewWithCells(30, nil) },
+	} {
+		func() {
+			defer func() {
+				if recover() == nil {
+					t.Errorf("%s should panic", name)
+				}
+			}()
+			f()
+		}()
+	}
+}

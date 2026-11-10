@@ -1,3 +1,5 @@
+// Package ramp provides Ramp, a generator of a ramp between two values over a number of steps with an
+// exponent for the curve.
 package ramp
 
 import "math"

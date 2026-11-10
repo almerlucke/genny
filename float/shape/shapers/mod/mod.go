@@ -1,3 +1,5 @@
+// Package mod provides Mod, a shaper that returns the floating point remainder of its input divided by
+// M.
 package mod
 
 import "math"

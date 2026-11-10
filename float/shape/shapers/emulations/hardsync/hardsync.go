@@ -1,3 +1,5 @@
+// Package hardsync provides HardSync, a shaper that emulates oscillator hard sync on a phase between 0
+// and 1.
 package hardsync
 
 import (

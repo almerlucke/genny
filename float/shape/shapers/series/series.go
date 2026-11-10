@@ -1,3 +1,5 @@
+// Package series provides Series, a shaper that chains shapers, the output of one is the input of the
+// next.
 package series
 
 import "github.com/almerlucke/genny/float/shape"

@@ -1,0 +1,136 @@
+# genny
+
+Generators for making music with Go. A generator hands out values one at a time: a melody, a rhythm,
+a modulation signal. You combine small generators into bigger ones (a mutating phrase on a Euclidean
+rhythm, quantized to a scale, swung, written to a MIDI file) and you can seed the whole thing, so the
+same seed gives the same piece.
+
+```go
+genny.Seed(7)
+
+key := scale.New(57, scale.Minor)                                  // A minor
+phrase := mutate.New([]int{7, 9, 11, 9, 8, 7, 4, 7}, mutate.Config[int]{SwapProb: 0.6})
+lead := note.Voice{
+	Pitch:    rest.NewGated[float64](scale.NewDegrees(key, phrase), euclid.New(16, 7, 0)),
+	Velocity: groove.NewAccent(4, 4, 4, 4),
+	Offset:   groove.NewSwing(0.15),
+}
+midi.WriteFile("lead.mid", midi.File{
+	Tempo:  110,
+	Tracks: []midi.Track{{Name: "lead", Events: lead.Render(64)}},
+})
+```
+
+`go run ./examples/music -seed 7 -mid piece.mid` is a bigger version of this: chords, bass and lead.
+
+## The generator
+
+Everything implements one small interface:
+
+```go
+type Generator[T any] interface {
+	Generate() T      // the next value
+	Continuous() bool // false if Done and Reset are meaningful: the generator can end
+	Done() bool       // true when a non-continuous generator has ended
+	Reset()           // start again
+}
+```
+
+Wrappers and combinators take generators and return generators, so they nest freely.
+
+**Random numbers** all come from one stream. `genny.Seed(n)` makes every generator repeatable: after the
+same seed the same calls give the same values. Without a seed every run is different. Generators that
+draw at creation (`noise`, `lfo`, `bucket`, `automaton.NewRandom`) must be created after the seed.
+
+**Conventions.** A constructor panics on arguments that can never work (`euclid.New(0, ...)`, a scale
+with descending steps) so the mistake shows at setup. `Generate` never panics. Empty input is allowed:
+a `sequence`, `bucket`, `and`, `or` or `arpeggio` without values is done at once and generates the zero
+value. Where a value has a natural limit it is clamped instead (more pulses than steps, a probability
+above 1).
+
+## Packages
+
+### Building blocks
+
+| Package | What it does |
+|---|---|
+| `sequence` | Plays a list of values once or in a loop |
+| `bucket` | Hands out values at random, or one by one in shuffled order |
+| `arpeggio` | Up, converge, alternate and random patterns, with mirroring |
+| `constant`, `function` | A fixed value, a Go function as a generator |
+| `markov` | A Markov chain over states, `ProbabilityState` for weighted transitions |
+| `walk` | A random walk through an N dimensional container |
+| `and`, `or` | Play generators one after the other, or pick one |
+| `combine`, `flatten`, `unwrap`, `template` | Combine generators into slices, maps, or flatten them |
+| `transform`, `conv` | Change the values (`T` to `T`, or to another type) |
+| `repeat`, `continuous` | Give a continuous generator an end, or a finished one a loop |
+
+### Rhythm and time
+
+| Package | What it does |
+|---|---|
+| `euclid` | Euclidean rhythms (Bjorklund): 5 pulses in 8 steps is x.xx.xx. |
+| `rest` | Rests: `Gated` by a gate generator, or `Probability` thins a melody out |
+| `clock` | `Divider` (every nth step) and `Poly` (cycles of different lengths) |
+| `groove` | `Swing`, `Humanize`, `Jitter` for timing, `Accent` for velocities by meter (7/8 as 2+2+3) |
+| `ratchet` | Repeats a step several times: a roll. Random or from a pattern |
+| `section` | Plays parts for N steps each: A for 4 bars, B for 8, and around |
+| `automaton` | One dimensional cellular automata (rule 30, 90, 110) as patterns and gates |
+
+### Pitch and harmony
+
+| Package | What it does |
+|---|---|
+| `scale` | Scales (modes, pentatonic, blues, just intonation, n equal divisions), quantizing, `Walk` over degrees |
+| `chord` | Chords, inversions, diatonic chords from a scale, a `VoiceLeader` for smooth voice leading |
+| `progression` | Chord progressions as a Markov chain (pop, classical, jazz, blues), or your own table |
+| `row` | Tone rows: retrograde, inversion, transposition, the twelve tone matrix |
+| `ngram` | Learns the style of an example melody and plays new music in it |
+
+### Variation and structure
+
+| Package | What it does |
+|---|---|
+| `mutate` | A phrase that changes a little every time it is played |
+| `choose` | Picks between generators with weights |
+| `lsystem` | Lindenmayer systems: self-similar phrases from rewriting rules |
+| `numseq` | Fibonacci, Collatz, Thue-Morse and the primes |
+
+### Numbers, signals and modulation (`float/...`)
+
+| Package | What it does |
+|---|---|
+| `float/phasor`, `float/line`, `float/ramp` | Phase ramps, lines and curves between values |
+| `float/lfo` | LFO: sine, triangle, saw, square, sample-and-hold, smooth random, and a slew limiter |
+| `float/noise` | Smooth (Perlin style) noise with octaves |
+| `float/rand`, `float/dist` | Uniform random values, and Gaussian and exponential ones |
+| `float/rwalk` | A random walk between limits (clip, bounce, jump) |
+| `float/lissajous` | Two related modulation signals |
+| `float/iter` + `updaters/chaos` | Iterated maps and attractors: Verhulst, Hénon, Aronson, Lorenz, Rössler |
+| `float/envelopes/adsr` | ADSR envelopes |
+| `float/interp` | Reads a frame generator at another speed, with interpolation |
+| `float/shape` + `shapers/...` | Waveshaping: lookup tables, clipping, mirroring, quantizing, Chebyshev and others |
+| `float/export/plot` | Plots a generator to a PNG |
+
+### Notes and output
+
+| Package | What it does |
+|---|---|
+| `note` | A `Voice` turns generators (pitch with rests, velocity, length, timing offset, ratchets) into note events |
+| `midi` | Writes note events to a Standard MIDI File, with optional pitch bend for microtonal pitches |
+
+## Examples
+
+Every package has runnable examples in its `example_test.go` (`go doc` shows them, `go test` checks them).
+There are also two programs:
+
+```sh
+go run ./examples/music -seed 3 -mid out.mid   # a piece as text and as a MIDI file
+go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
+```
+
+## Tests
+
+```sh
+go test ./...
+```

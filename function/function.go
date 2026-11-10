@@ -1,3 +1,4 @@
+// Package function provides Function, a generator that calls a Go function for every value.
 package function
 
 import "github.com/almerlucke/genny"
@@ -19,13 +20,14 @@ func NewWithContext[T any](ctx any, f func(any) T) *Function[T] {
 	return &Function[T]{ctx: ctx, cf: f}
 }
 
+// NewRandom generates uniform random values in [low, high)
 func NewRandom(low float64, high float64) *Function[float64] {
 	return New(func() float64 { return genny.Float64()*(high-low) + low })
 }
 
 // Generate calls the internal function with ctx to generate a new value
 func (f *Function[T]) Generate() T {
-	if f.ctx != nil {
+	if f.cf != nil {
 		return f.cf(f.ctx)
 	}
 

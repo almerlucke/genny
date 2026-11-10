@@ -1,3 +1,5 @@
+// Package sequence provides Sequence, a generator that plays a fixed list of values in order, once or
+// looping.
 package sequence
 
 import "github.com/almerlucke/genny"
@@ -10,11 +12,13 @@ type Sequence[T any] struct {
 	done       bool
 }
 
-// New returns a new non-continuous sequence
+// New returns a new non-continuous sequence. A sequence without values is done at once and
+// generates the zero value
 func New[T any](values ...T) *Sequence[T] {
 	return &Sequence[T]{
 		values: values,
 		index:  0,
+		done:   len(values) == 0,
 	}
 }
 
@@ -27,6 +31,11 @@ func NewLoop[T any](values ...T) *Sequence[T] {
 
 // Generate returns the next value in a sequence
 func (s *Sequence[T]) Generate() T {
+	if len(s.values) == 0 {
+		var zero T
+		return zero
+	}
+
 	if s.done {
 		return s.values[len(s.values)-1]
 	}
@@ -56,7 +65,7 @@ func (s *Sequence[T]) Done() bool {
 // Reset the sequence
 func (s *Sequence[T]) Reset() {
 	s.index = 0
-	s.done = false
+	s.done = len(s.values) == 0
 }
 
 // Randomize shuffles the sequence values randomly

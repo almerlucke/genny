@@ -1,3 +1,5 @@
+// Package combine provides Combine, which turns several generators into one that generates a slice
+// with one value from each.
 package combine
 
 import "github.com/almerlucke/genny"

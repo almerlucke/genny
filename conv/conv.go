@@ -1,3 +1,5 @@
+// Package conv provides Convert, a wrapper that converts the values of a generator to another type
+// with a Converter.
 package conv
 
 import "github.com/almerlucke/genny"

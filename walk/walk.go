@@ -1,3 +1,5 @@
+// Package walk provides Walk, a random walk through the cells of an N dimensional Container (such as a
+// Matrix), moving one step in one dimension at a time.
 package walk
 
 import "github.com/almerlucke/genny"
@@ -56,7 +58,9 @@ func New[T any](container Container[T]) *Walk[T] {
 	index := make([]int, len(dims))
 
 	for i, d := range dims {
-		index[i] = genny.Intn(d)
+		if d > 0 {
+			index[i] = genny.Intn(d)
+		}
 	}
 
 	w.index = index
@@ -67,7 +71,20 @@ func New[T any](container Container[T]) *Walk[T] {
 // Generate for random walk
 func (w *Walk[T]) Generate() T {
 	dimensions := w.container.Dimensions()
-	selectedDimension := genny.Intn(len(dimensions))
+
+	// only dimensions with room to move can be walked
+	var walkable []int
+	for dim, size := range dimensions {
+		if size > 1 {
+			walkable = append(walkable, dim)
+		}
+	}
+
+	if len(walkable) == 0 {
+		return w.container.ValueAtIndex(w.index)
+	}
+
+	selectedDimension := walkable[genny.Intn(len(walkable))]
 	selectedDimensionSize := dimensions[selectedDimension]
 	selectedIndex := w.index[selectedDimension]
 

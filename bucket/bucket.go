@@ -1,9 +1,12 @@
+// Package bucket provides Bucket, a generator that hands out its values in shuffled order, one by one
+// or by random pick.
 package bucket
 
 import (
 	"github.com/almerlucke/genny"
 )
 
+// Mode sets how Generate picks values
 type Mode int
 
 const (
@@ -11,7 +14,8 @@ const (
 	Indexed
 )
 
-// Bucket holds values which can be fetched randomly or one by one. The values are shuffled random initially
+// Bucket holds values which can be fetched randomly or one by one. The values are shuffled random initially.
+// A bucket without values is done at once and generates the zero value
 type Bucket[T any] struct {
 	values     []T
 	mode       Mode
@@ -26,6 +30,7 @@ func New[T any](values ...T) *Bucket[T] {
 	b := &Bucket[T]{
 		values: values,
 		mode:   Indexed,
+		done:   len(values) == 0,
 	}
 
 	b.shuffle()
@@ -33,10 +38,12 @@ func New[T any](values ...T) *Bucket[T] {
 	return b
 }
 
+// NewLoop is like New but starts over (reshuffled) when all values are taken
 func NewLoop[T any](values ...T) *Bucket[T] {
 	b := &Bucket[T]{
 		values:     values,
 		mode:       Indexed,
+		done:       len(values) == 0,
 		continuous: true,
 	}
 
@@ -45,8 +52,14 @@ func NewLoop[T any](values ...T) *Bucket[T] {
 	return b
 }
 
-// Generate gets the next value from the bucket. If all values are fetched from the bucket return nil
+// Generate gets the next value from the bucket. In Indexed mode, once all values are fetched from a
+// non-looping bucket, it keeps returning the last value (see Done)
 func (b *Bucket[T]) Generate() T {
+	if len(b.values) == 0 {
+		var zero T
+		return zero
+	}
+
 	if b.mode == Random {
 		return b.values[genny.Intn(len(b.values))]
 	}
@@ -83,7 +96,7 @@ func (b *Bucket[T]) Continuous() bool {
 // Reset the bucket
 func (b *Bucket[T]) Reset() {
 	b.index = 0
-	b.done = false
+	b.done = len(b.values) == 0
 	b.shuffle()
 }
 
@@ -108,6 +121,7 @@ func (b *Bucket[T]) Values() []T {
 func (b *Bucket[T]) SetValues(vals []T) *Bucket[T] {
 	b.values = vals
 	b.index = 0
+	b.done = len(vals) == 0
 	b.shuffle()
 	return b
 }

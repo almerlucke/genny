@@ -1,3 +1,4 @@
+// Package voyager provides Sawtooth, a shaper that emulates the sawtooth of the Minimoog Voyager.
 package voyager
 
 import (

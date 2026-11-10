@@ -1,3 +1,4 @@
+// Package constant provides Constant, a generator that always generates the same value.
 package constant
 
 // Constant value

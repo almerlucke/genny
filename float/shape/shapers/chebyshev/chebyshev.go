@@ -1,3 +1,5 @@
+// Package chebyshev provides Chebyshev, a shaper that sums Chebyshev polynomials of its input with a
+// weight per harmonic, so a sine in gives those harmonics out.
 package chebyshev
 
 type Chebyshev struct {

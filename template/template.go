@@ -1,3 +1,6 @@
+// Package template provides Template, a map whose generator values are replaced by freshly generated
+// values on every Generate. Slice values are split over several maps, and Parameters can be set from
+// outside.
 package template
 
 import (
@@ -42,6 +45,9 @@ func (iv *intermediateValue) index(i int) any {
 	}
 
 	// clip index to length
+	if iv.length == 0 {
+		return iv.value
+	}
 	if i >= iv.length {
 		i = iv.length - 1
 	}
@@ -123,7 +129,7 @@ func (t Template) SetParameter(name string, val any) {
 }
 
 func (t Template) SetParameters(parameters []*Parameter) {
-	for _, v := range t {
+	for k, v := range t {
 		switch vt := v.(type) {
 		case Template:
 			vt.SetParameters(parameters)
@@ -138,6 +144,7 @@ func (t Template) SetParameters(parameters []*Parameter) {
 			for _, parameter := range parameters {
 				if vt.Name == parameter.Name {
 					vt.Value = parameter.Value
+					t[k] = vt // vt is a copy, store it back
 					break
 				}
 			}
@@ -212,6 +219,9 @@ Generator[T]
 */
 func generate(va any) (any, bool) {
 	v := reflect.ValueOf(va)
+	if !v.IsValid() {
+		return va, false
+	}
 
 	m := v.MethodByName("Generate")
 	if !m.IsValid() {
@@ -228,6 +238,9 @@ func generate(va any) (any, bool) {
 
 func boolForMethod(va any, method string, defaultValue bool) bool {
 	v := reflect.ValueOf(va)
+	if !v.IsValid() {
+		return defaultValue
+	}
 
 	m := v.MethodByName(method)
 	if !m.IsValid() {
@@ -244,6 +257,9 @@ func boolForMethod(va any, method string, defaultValue bool) bool {
 
 func reset(va any) {
 	v := reflect.ValueOf(va)
+	if !v.IsValid() {
+		return
+	}
 
 	m := v.MethodByName("Reset")
 	if !m.IsValid() {

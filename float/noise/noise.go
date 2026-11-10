@@ -20,13 +20,22 @@ type Noise struct {
 	unipolar    bool
 }
 
-// New creates noise that moves step along the noise curve for every Generate: a small step is slow
+// New creates noise (it panics if octaves is less than 1) that moves step along the noise curve for every Generate: a small step is slow
 // and smooth (1 is about one wiggle per step). Every octave adds noise at lacunarity (2) times the
 // frequency and persistence (0.5) times the amplitude
 func New(step float64, octaves int) *Noise {
-	n := &Noise{step: step, octaves: max(octaves, 1), persistence: 0.5, lacunarity: 2}
+	if octaves < 1 {
+		panic("noise: octaves must be at least 1")
+	}
+	n := &Noise{step: step, octaves: octaves, persistence: 0.5, lacunarity: 2}
+	// gradients with a magnitude of 0.5..1 and a random sign: weak gradients would keep the noise
+	// well below the full range, with these a single octave reaches (almost) -1 and 1
 	for i := range n.grad {
-		n.grad[i] = genny.Float64()*2 - 1
+		g := 0.5 + 0.5*genny.Float64()
+		if genny.Float64() < 0.5 {
+			g = -g
+		}
+		n.grad[i] = g
 	}
 	return n
 }

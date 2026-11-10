@@ -1,6 +1,12 @@
+// Package interp provides Interpolate, a shaper that crossfades between neighbouring shapers with an
+// Index between 0 and 1.
 package interp
 
-import "github.com/almerlucke/genny/float/shape"
+import (
+	"math"
+
+	"github.com/almerlucke/genny/float/shape"
+)
 
 type Interpolate struct {
 	Shapers []shape.Shaper
@@ -14,7 +20,8 @@ func New(shapers ...shape.Shaper) *Interpolate {
 }
 
 func (ip *Interpolate) Shape(x float64) float64 {
-	fx := ip.Index * float64(len(ip.Shapers)-1)
+	index := math.Min(math.Max(ip.Index, 0), 1)
+	fx := index * float64(len(ip.Shapers)-1)
 	ix1 := int(fx)
 	ix2 := ix1 + 1
 

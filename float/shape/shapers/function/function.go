@@ -1,3 +1,5 @@
+// Package function provides Function, a shaper that applies a Go function, with constructors for mod,
+// abs, sine and triangle.
 package function
 
 import "math"

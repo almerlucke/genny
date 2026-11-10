@@ -32,7 +32,10 @@ func TestSequence(t *testing.T) {
 	if !l.Continuous() || l.Generate() != 1 || l.Generate() != 1 {
 		t.Error("loop")
 	}
-	if z := New("X", nil, 1, map[rune]int{}); z.Generate() != 0 {
-		t.Error("no symbols")
-	}
+	defer func() {
+		if recover() == nil {
+			t.Error("no symbols should panic")
+		}
+	}()
+	New("X", nil, 1, map[rune]int{})
 }

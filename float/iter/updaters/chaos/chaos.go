@@ -1,3 +1,5 @@
+// Package chaos provides iter.Updater implementations of chaotic systems: the Verhulst (logistic) map,
+// the Henon map, the Aronson map and the continuous Lorenz and Rossler attractors.
 package chaos
 
 import (

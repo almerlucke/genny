@@ -1,9 +1,13 @@
+// Package iter provides Iterator, a FrameGenerator that repeatedly applies an Updater (such as an
+// iterated map from the chaos package) to a vector of values.
 package iter
 
+// Updater advances a vector of values by one step
 type Updater interface {
 	Update([]float64)
 }
 
+// Iterator generates the successive states of an Updater
 type Iterator struct {
 	updater    Updater
 	initValues []float64
@@ -11,6 +15,7 @@ type Iterator struct {
 	outVector  []float64
 }
 
+// New creates an Iterator that starts from initValues
 func New(initValues []float64, updater Updater) *Iterator {
 	iter := &Iterator{
 		initValues: initValues,

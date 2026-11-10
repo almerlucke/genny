@@ -34,8 +34,11 @@ type LFO struct {
 	from, to   float64
 }
 
-// New creates an LFO of frequency fc at sample (or step) rate fs
+// New creates an LFO of frequency fc at sample (or step) rate fs. It panics if fs is not positive
 func New(shape Shape, fc, fs float64) *LFO {
+	if !(fs > 0) {
+		panic("lfo: sample rate must be positive")
+	}
 	l := &LFO{shape: shape, phasor: phasor.New(fc, fs, 0), pulseWidth: 0.5}
 	l.Reset()
 	return l

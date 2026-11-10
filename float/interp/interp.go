@@ -1,9 +1,12 @@
+// Package interp provides Interpolator, a FrameGenerator that interpolates (linear or cubic) between
+// the frames of another FrameGenerator, so the source is read at a different speed.
 package interp
 
 import (
 	"github.com/almerlucke/genny/float"
 )
 
+// Method is the interpolation method
 type Method int
 
 const (
@@ -20,9 +23,13 @@ func (h interpolationHistory) interpolateLinear(t float64) float64 {
 func (h interpolationHistory) interpolateCubic(t float64) float64 {
 	t2 := t * t
 	t3 := t * t2
-	return (2*t3-3*t2+1)*h[1] + (t3-2*t2+t)*h[0] + (-2*t3+3*t2)*h[2] + (t3-t2)*h[3]
+	// cubic Hermite between h[1] and h[2], with Catmull-Rom tangents from the neighbours
+	m1 := (h[2] - h[0]) / 2
+	m2 := (h[3] - h[1]) / 2
+	return (2*t3-3*t2+1)*h[1] + (t3-2*t2+t)*m1 + (-2*t3+3*t2)*h[2] + (t3-t2)*m2
 }
 
+// Interpolator reads a FrameGenerator at a speed of dt source frames per output frame
 type Interpolator struct {
 	generator float.FrameGenerator
 	dt        float64
@@ -33,6 +40,7 @@ type Interpolator struct {
 	done      bool
 }
 
+// New creates an Interpolator, dt is the step in source frames per generated frame (1 plays the source as is)
 func New(generator float.FrameGenerator, method Method, dt float64) *Interpolator {
 	numDimensions := generator.Dimensions()
 

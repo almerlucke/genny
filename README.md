@@ -137,6 +137,7 @@ go run ./examples/tendency -seed 3 -mid t.mid    # tendency masks and distributi
 go run ./examples/rhythmtools -seed 3 -mid r.mid # sieves, pulse hierarchy, splitting
 go run ./examples/constraints -seed 3 -mid c.mid # grammar, constrained walks, spectral chords
 go run ./examples/suite -seed 3 -mid s.mid       # all of them in one piece of 32 bars
+go run ./examples/rexregum -seed 7 -mid r.mid    # Rex Regum: a piece on biblical numbers (3, 7, 12, 153)
 go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
 ```
 

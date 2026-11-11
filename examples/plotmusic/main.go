@@ -188,5 +188,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	plotsTendency(dir)
+	plotsRhythm(dir)
+	plotsConstraints(dir)
+
 	fmt.Println("plots written to", dir)
 }

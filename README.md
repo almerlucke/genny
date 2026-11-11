@@ -71,6 +71,7 @@ above 1).
 |---|---|
 | `euclid` | Euclidean rhythms (Bjorklund): 5 pulses in 8 steps is x.xx.xx. |
 | `rest` | Rests: `Gated` by a gate generator, or `Probability` thins a melody out |
+| `pulse` | Metric hierarchy (Barlow style): thin a rhythm by importance, fade it in and out with a level generator |
 | `clock` | `Divider` (every nth step) and `Poly` (cycles of different lengths) |
 | `groove` | `Swing`, `Humanize`, `Jitter` for timing, `Accent` for velocities by meter (7/8 as 2+2+3) |
 | `ratchet` | Repeats a step several times: a roll. Random or from a pattern |
@@ -82,9 +83,9 @@ above 1).
 | Package | What it does |
 |---|---|
 | `scale` | Scales (modes, pentatonic, blues, just intonation, n equal divisions), quantizing, `Walk` over degrees |
-| `chord` | Chords, inversions, diatonic chords from a scale, a `VoiceLeader` for smooth voice leading |
+| `chord` | Chords, inversions, diatonic chords from a scale, a `VoiceLeader` for smooth voice leading, spectral chords (harmonic, FM, ring modulation) |
 | `progression` | Chord progressions as a Markov chain (pop, classical, jazz, blues), or your own table |
-| `row` | Tone rows: retrograde, inversion, transposition, the twelve tone matrix |
+| `row` | Tone rows: retrograde, inversion, transposition, the twelve tone matrix, permutations and all-interval rows |
 | `ngram` | Learns the style of an example melody and plays new music in it |
 
 ### Variation and structure
@@ -92,9 +93,14 @@ above 1).
 | Package | What it does |
 |---|---|
 | `mutate` | A phrase that changes a little every time it is played |
-| `choose` | Picks between generators with weights |
+| `choose` | Picks between generators with weights, picks list elements by a distribution, weight sets that change over time |
 | `lsystem` | Lindenmayer systems: self-similar phrases from rewriting rules |
 | `numseq` | Fibonacci, Collatz, Thue-Morse and the primes |
+| `grammar` | Context-free rewrite grammars with weighted alternatives: phrases and bars that are derived again every cycle |
+| `constrain` | Filters that redraw until a rule is met: allowed or blocked intervals, no repetitions, no duplicates in a group; constrained melodic walks |
+| `sieve` | Xenakis sieves: residue classes with union, intersection and complement, as pitch sets, gates and filters |
+| `split` | Recursive rhythm splitting: a duration divided into branches until a lower limit |
+| `listtools` | Jump, stutter, group, grow, gather-until, plus-min, positive-negative |
 
 ### Numbers, signals and modulation (`float/...`)
 
@@ -103,7 +109,8 @@ above 1).
 | `float/phasor`, `float/line`, `float/ramp` | Phase ramps, lines and curves between values |
 | `float/lfo` | LFO: sine, triangle, saw, square, sample-and-hold, smooth random, and a slew limiter |
 | `float/noise` | Smooth (Perlin style) noise with octaves |
-| `float/rand`, `float/dist` | Uniform random values, and Gaussian and exponential ones |
+| `float/rand`, `float/dist` | Uniform random values; Gaussian, exponential, beta, Cauchy and Weibull ones, Lehmer and pink noise |
+| `float/tendency` | Tendency masks: values or choices between two moving bounds, with beta variants, two-mask rejection, anchor and spray |
 | `float/rwalk` | A random walk between limits (clip, bounce, jump) |
 | `float/lissajous` | Two related modulation signals |
 | `float/iter` + `updaters/chaos` | Iterated maps and attractors: Verhulst, Hénon, Aronson, Lorenz, Rössler |
@@ -122,10 +129,14 @@ above 1).
 ## Examples
 
 Every package has runnable examples in its `example_test.go` (`go doc` shows them, `go test` checks them).
-There are also two programs:
+There are also programs that play a piece as text and write a MIDI file (`-mid`):
 
 ```sh
 go run ./examples/music -seed 3 -mid out.mid   # a piece as text and as a MIDI file
+go run ./examples/tendency -seed 3 -mid t.mid    # tendency masks and distributions
+go run ./examples/rhythmtools -seed 3 -mid r.mid # sieves, pulse hierarchy, splitting
+go run ./examples/constraints -seed 3 -mid c.mid # grammar, constrained walks, spectral chords
+go run ./examples/suite -seed 3 -mid s.mid       # all of them in one piece of 32 bars
 go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
 ```
 

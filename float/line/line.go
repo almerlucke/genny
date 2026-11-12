@@ -57,7 +57,8 @@ func (l *Line) From(from float64) {
 	l.stepsLeft = 0
 }
 
-// To starts a line from the last target to a new target in numSteps steps
+// To starts a line from the last target to a new target in numSteps steps. With numSteps below 1 the
+// line is done at once and stays where it was (it does not move to the target)
 func (l *Line) To(to float64, numSteps int) {
 	l.from = l.to
 	l.to = to

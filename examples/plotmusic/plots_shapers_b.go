@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/almerlucke/genny/float/export/plot"
 	"log"
 	"math"
 
@@ -17,24 +18,20 @@ import (
 	"github.com/almerlucke/genny/scale"
 	"github.com/almerlucke/genny/sequence"
 	"github.com/almerlucke/genny/sieve"
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/plotutil"
-	"gonum.org/v1/plot/vg"
 )
 
 // shaperBCurve is a named curve to plot
 type shaperBCurve struct {
 	name string
-	pts  plotter.XYs
+	pts  plot.XYs
 }
 
 // shaperBSample evaluates f at n+1 evenly spaced points of [x0,x1]
 func shaperBSample(name string, x0, x1 float64, n int, f func(x float64) float64) shaperBCurve {
-	pts := make(plotter.XYs, n+1)
+	pts := make(plot.XYs, n+1)
 	for i := range pts {
 		x := x0 + (x1-x0)*float64(i)/float64(n)
-		pts[i] = plotter.XY{X: x, Y: f(x)}
+		pts[i] = plot.XY{X: x, Y: f(x)}
 	}
 	return shaperBCurve{name, pts}
 }
@@ -50,19 +47,19 @@ func shaperBSave(dir, name, title, xLabel, yLabel string, curves ...shaperBCurve
 	for _, c := range curves {
 		vs = append(vs, c.name, c.pts)
 	}
-	if err := plotutil.AddLines(p, vs...); err != nil {
+	if err := plot.AddLines(p, vs...); err != nil {
 		log.Fatalf("%s: %v", name, err)
 	}
-	if err := p.Save(20*vg.Centimeter, 9*vg.Centimeter, path(dir, name)); err != nil {
+	if err := p.Save(20*plot.Centimeter, 9*plot.Centimeter, path(dir, name)); err != nil {
 		log.Fatalf("%s: %v", name, err)
 	}
 }
 
 // shaperBRun feeds the inputs through a shaper and returns the output as a curve over the call index
 func shaperBRun(name string, s shape.Shaper, in func(i int) float64, n int) shaperBCurve {
-	pts := make(plotter.XYs, n)
+	pts := make(plot.XYs, n)
 	for i := range pts {
-		pts[i] = plotter.XY{X: float64(i), Y: s.Shape(in(i))}
+		pts[i] = plot.XY{X: float64(i), Y: s.Shape(in(i))}
 	}
 	return shaperBCurve{name, pts}
 }
@@ -122,11 +119,11 @@ func plotsShapersB(dir string) {
 	tri := shaperBTriangle(1, 100)
 	schmitt := hysteresis.NewSchmitt(-0.3, 0.3, -1, 1)
 	play := hysteresis.NewPlay(0.8)
-	loopS, loopP := make(plotter.XYs, 200), make(plotter.XYs, 200)
+	loopS, loopP := make(plot.XYs, 200), make(plot.XYs, 200)
 	for i := range loopS {
 		x := tri(i)
-		loopS[i] = plotter.XY{X: x, Y: schmitt.Shape(x)}
-		loopP[i] = plotter.XY{X: x, Y: play.Shape(x)}
+		loopS[i] = plot.XY{X: x, Y: schmitt.Shape(x)}
+		loopP[i] = plot.XY{X: x, Y: play.Shape(x)}
 	}
 	shaperBSave(dir, "hysteresis_loop.png", "Hysteresis loops (input on x)", "in", "out",
 		shaperBCurve{"schmitt -0.3..0.3", loopS}, shaperBCurve{"play, width 0.8", loopP})

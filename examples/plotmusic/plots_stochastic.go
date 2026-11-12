@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/almerlucke/genny/float/export/plot"
 	"log"
 	"math"
 
@@ -10,23 +11,19 @@ import (
 	"github.com/almerlucke/genny/evolve"
 	"github.com/almerlucke/genny/scale"
 	"github.com/almerlucke/genny/stochastic"
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
-	"gonum.org/v1/plot/vg/draw"
 )
 
 // stochScatter plots points as dots or squares
-func stochScatter(dir, name, title, xLabel, yLabel string, w, h vg.Length, series ...plotter.XYs) {
+func stochScatter(dir, name, title, xLabel, yLabel string, w, h plot.Length, series ...plot.XYs) {
 	p := plot.New()
 	p.Title.Text, p.X.Label.Text, p.Y.Label.Text = title, xLabel, yLabel
 	for _, pts := range series {
-		s, err := plotter.NewScatter(pts)
+		s, err := plot.NewScatter(pts)
 		if err != nil {
 			log.Fatalf("%s: %v", name, err)
 		}
-		s.GlyphStyle.Shape = draw.BoxGlyph{}
-		s.GlyphStyle.Radius = vg.Points(2)
+		s.GlyphStyle.Shape = plot.BoxGlyph{}
+		s.GlyphStyle.Radius = plot.Points(2)
 		p.Add(s)
 	}
 	consSave(p, dir, name, w, h)
@@ -54,35 +51,35 @@ func plotsStochastic(dir string) {
 	p := plot.New()
 	p.Title.Text, p.X.Label.Text, p.Y.Label.Text = "Poisson onsets (rate 0.5, 1, 2 per step)", "step", "rate"
 	for i, rate := range []float64{0.5, 1, 2} {
-		pts := plotter.XYs{}
+		pts := plot.XYs{}
 		for _, t := range stochastic.Poisson(rate, 64) {
-			pts = append(pts, plotter.XY{X: t, Y: float64(i)})
+			pts = append(pts, plot.XY{X: t, Y: float64(i)})
 		}
-		s, err := plotter.NewScatter(pts)
+		s, err := plot.NewScatter(pts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.GlyphStyle.Radius = vg.Points(2)
+		s.GlyphStyle.Radius = plot.Points(2)
 		p.Add(s)
 	}
-	consSave(p, dir, "stochastic_poisson.png", 20*vg.Centimeter, 6*vg.Centimeter)
+	consSave(p, dir, "stochastic_poisson.png", 20*plot.Centimeter, 6*plot.Centimeter)
 
 	// Life: one row of a random grid over 64 generations (a dot is a live cell, time runs upwards)
 	genny.Seed(52)
 	life := automaton.NewLifeRandom(48, 24, automaton.Conway, 0.35)
-	var strip plotter.XYs
+	var strip plot.XYs
 	var population []float64
 	for gen := range 64 {
 		for x, alive := range life.Row(12) {
 			if alive {
-				strip = append(strip, plotter.XY{X: float64(x), Y: float64(gen)})
+				strip = append(strip, plot.XY{X: float64(x), Y: float64(gen)})
 			}
 		}
 		population = append(population, float64(life.Population()))
 		life.Step()
 	}
 	stochScatter(dir, "life_strip.png", "Game of Life: row 12 over 64 generations", "column", "generation",
-		20*vg.Centimeter, 12*vg.Centimeter, strip)
+		20*plot.Centimeter, 12*plot.Centimeter, strip)
 	i := 0
 	lines(dir, "life_population.png", "Game of Life: live cells", 64, []string{"population"},
 		func() float64 { i++; return population[i-1] })
@@ -114,16 +111,16 @@ func plotsStochastic(dir string) {
 		func() float64 { b++; return best[b-1] }, func() float64 { m++; return mean[m-1] })
 
 	// the Messiaen modes as pitch sets over one octave (the line of a mode, a dot per pitch class)
-	var modes []plotter.XYs
+	var modes []plot.XYs
 	for i, mode := range [][]float64{scale.Mode1, scale.Mode2, scale.Mode3, scale.Mode4, scale.Mode5, scale.Mode6, scale.Mode7} {
-		pts := plotter.XYs{}
+		pts := plot.XYs{}
 		for _, s := range mode {
-			pts = append(pts, plotter.XY{X: s, Y: float64(i + 1)})
+			pts = append(pts, plot.XY{X: s, Y: float64(i + 1)})
 		}
 		modes = append(modes, pts)
 	}
 	stochScatter(dir, "messiaen_modes.png", fmt.Sprintf("Messiaen's modes (bottom to top: 1 to 7; transpositions %d, %d, %d, %d, %d, %d, %d)",
 		scale.Transpositions(scale.Mode1), scale.Transpositions(scale.Mode2), scale.Transpositions(scale.Mode3),
 		scale.Transpositions(scale.Mode4), scale.Transpositions(scale.Mode5), scale.Transpositions(scale.Mode6),
-		scale.Transpositions(scale.Mode7)), "semitones above the root", "mode", 20*vg.Centimeter, 9*vg.Centimeter, modes...)
+		scale.Transpositions(scale.Mode7)), "semitones above the root", "mode", 20*plot.Centimeter, 9*plot.Centimeter, modes...)
 }

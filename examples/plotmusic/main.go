@@ -26,7 +26,6 @@ import (
 	"github.com/almerlucke/genny/numseq"
 	"github.com/almerlucke/genny/progression"
 	"github.com/almerlucke/genny/scale"
-	"gonum.org/v1/plot/vg"
 )
 
 // frames is a float.FrameGenerator made of one function that returns the values of a step
@@ -50,7 +49,7 @@ func lines(dir, name, title string, n int, names []string, gens ...func() float6
 		}
 		return out
 	}}
-	err := plot.PlotX(g, n, title, "step", "", names, 20*vg.Centimeter, 8*vg.Centimeter, path(dir, name))
+	err := plot.FramesX(g, n, title, "step", "", names, 20*plot.Centimeter, 8*plot.Centimeter, path(dir, name))
 	if err != nil {
 		log.Fatalf("%s: %v", name, err)
 	}
@@ -110,7 +109,7 @@ func main() {
 		{"lorenz", iter.New([]float64{1, 1, 1}, chaos.NewLorenz(10, 28, 8.0/3, 0.01)), 2500},
 		{"rossler", iter.New([]float64{1, 1, 1}, chaos.NewRossler(0.2, 0.2, 5.7, 0.05)), 2500},
 	} {
-		err := plot.PlotX(a.it, a.n, a.name, "step", "", []string{"x", "y", "z"}, 20*vg.Centimeter, 8*vg.Centimeter,
+		err := plot.FramesX(a.it, a.n, a.name, "step", "", []string{"x", "y", "z"}, 20*plot.Centimeter, 8*plot.Centimeter,
 			path(dir, a.name+".png"))
 		if err != nil {
 			log.Fatal(err)
@@ -182,8 +181,8 @@ func main() {
 		func() float64 { return float64(tm.Generate() * 6) })
 
 	// a lissajous curve: its two outputs over time
-	err := plot.PlotX(lissajous.New(3, 2, math.Pi/2, 100), 200, "Lissajous 3:2", "step", "", []string{"x", "y"},
-		20*vg.Centimeter, 8*vg.Centimeter, path(dir, "lissajous.png"))
+	err := plot.FramesX(lissajous.New(3, 2, math.Pi/2, 100), 200, "Lissajous 3:2", "step", "", []string{"x", "y"},
+		20*plot.Centimeter, 8*plot.Centimeter, path(dir, "lissajous.png"))
 	if err != nil {
 		log.Fatal(err)
 	}

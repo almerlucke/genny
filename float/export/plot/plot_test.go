@@ -8,13 +8,12 @@ import (
 	"github.com/almerlucke/genny/float"
 	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/float/phasor"
-	"gonum.org/v1/plot/vg"
 )
 
-func TestPlotWritesAPNG(t *testing.T) {
+func TestFramesWritesAPNG(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "p.png")
 	g := float.ToFrame(phasor.New(1, 16, 0))
-	if err := plot.Plot(g, 32, 200, 100, file); err != nil {
+	if err := plot.Frames(g, 32, 200, 100, file); err != nil {
 		t.Fatal(err)
 	}
 	data, err := os.ReadFile(file)
@@ -26,7 +25,7 @@ func TestPlotWritesAPNG(t *testing.T) {
 	}
 
 	file2 := filepath.Join(t.TempDir(), "p2.png")
-	if err := plot.PlotX(g, 16, "title", "x", "y", []string{"phase"}, 2*vg.Inch, vg.Inch, file2); err != nil {
+	if err := plot.FramesX(g, 16, "title", "x", "y", []string{"phase"}, 2*plot.Inch, plot.Inch, file2); err != nil {
 		t.Fatal(err)
 	}
 	if st, err := os.Stat(file2); err != nil || st.Size() == 0 {

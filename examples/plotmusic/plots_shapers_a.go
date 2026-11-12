@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/almerlucke/genny/float/export/plot"
 	"image/color"
 	"log"
 	"math"
@@ -14,9 +15,6 @@ import (
 	"github.com/almerlucke/genny/float/shape/shapers/saturate"
 	"github.com/almerlucke/genny/float/shape/shapers/smoothstep"
 	"github.com/almerlucke/genny/float/shape/shapers/wavefold"
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 )
 
 // shaperANamed is a shaper with the name used in a legend
@@ -38,21 +36,21 @@ func shaperALines(dir, name, title, xLabel, yLabel string, series []shaperANamed
 	p.Legend.Top = true
 	p.Legend.Left = true
 	for i, ns := range series {
-		pts := make(plotter.XYs, len(xs))
+		pts := make(plot.XYs, len(xs))
 		for j, x := range xs {
-			pts[j] = plotter.XY{X: x, Y: f(ns.s, x)}
+			pts[j] = plot.XY{X: x, Y: f(ns.s, x)}
 		}
-		l, err := plotter.NewLine(pts)
+		l, err := plot.NewLine(pts)
 		if err != nil {
 			log.Fatalf("%s: %v", name, err)
 		}
 		l.Color = shaperAColor(i)
-		l.Width = vg.Points(1.5)
+		l.Width = plot.Points(1.5)
 		p.Add(l)
 		p.Legend.Add(ns.name, l)
 	}
-	p.Add(plotter.NewGrid())
-	if err := p.Save(14*vg.Centimeter, 10*vg.Centimeter, path(dir, name)); err != nil {
+	p.Add(plot.NewGrid())
+	if err := p.Save(14*plot.Centimeter, 10*plot.Centimeter, path(dir, name)); err != nil {
 		log.Fatalf("%s: %v", name, err)
 	}
 }

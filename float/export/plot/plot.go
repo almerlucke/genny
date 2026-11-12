@@ -13,6 +13,7 @@ import (
 	"image/png"
 	"math"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -66,7 +67,17 @@ type Axis struct {
 	Min   float64
 	Max   float64
 	Tick  struct{ Marker TickMarker }
+	// Scale is Linear (the default) or Log. A log axis needs positive data and a positive Min
+	Scale Scale
 }
+
+// Scale is the scale of an axis
+type Scale int
+
+const (
+	Linear Scale = iota
+	Log
+)
 
 // Legend lists the plotters that were added to it
 type Legend struct {
@@ -81,7 +92,7 @@ type legendEntry struct {
 
 // Thumbnailer is something that can draw a small sample of itself for the legend
 type Thumbnailer interface {
-	thumbnail(c *canvas, r image.Rectangle)
+	thumbnail(c drawer, r image.Rectangle)
 }
 
 // Add adds an entry to the legend
@@ -90,7 +101,7 @@ func (l *Legend) Add(name string, t Thumbnailer) { l.entries = append(l.entries,
 // Plotter is something that can be drawn in a plot
 type Plotter interface {
 	dataRange() (xmin, xmax, ymin, ymax float64, ok bool)
-	draw(c *canvas, m *mapping)
+	draw(c drawer, m *mapping)
 }
 
 // mapping converts data to canvas coordinates
@@ -99,15 +110,27 @@ type mapping struct {
 	xmin, xmax     float64
 	ymin, ymax     float64
 	xticks, yticks []Tick
+	xlog, ylog     bool
 	scale          float64 // canvas pixels per point
 }
 
+// frac is the position of v between lo and hi, from 0 to 1, on a linear or a log scale
+func frac(v, lo, hi float64, log bool) float64 {
+	if log {
+		if v <= 0 {
+			return math.Inf(-1)
+		}
+		return (math.Log10(v) - math.Log10(lo)) / (math.Log10(hi) - math.Log10(lo))
+	}
+	return (v - lo) / (hi - lo)
+}
+
 func (m *mapping) x(v float64) float64 {
-	return float64(m.area.Min.X) + (v-m.xmin)/(m.xmax-m.xmin)*float64(m.area.Dx())
+	return float64(m.area.Min.X) + frac(v, m.xmin, m.xmax, m.xlog)*float64(m.area.Dx())
 }
 
 func (m *mapping) y(v float64) float64 {
-	return float64(m.area.Max.Y) - (v-m.ymin)/(m.ymax-m.ymin)*float64(m.area.Dy())
+	return float64(m.area.Max.Y) - frac(v, m.ymin, m.ymax, m.ylog)*float64(m.area.Dy())
 }
 
 // Plot is a drawing with a title, two axes, a legend and plotters
@@ -130,10 +153,28 @@ func New() *Plot {
 // Add adds plotters, drawn in the order they are added
 func (p *Plot) Add(ps ...Plotter) { p.plotters = append(p.plotters, ps...) }
 
+// fixed reports whether both Min and Max of the axis are set
+func fixed(a Axis) bool {
+	return a.Min < a.Max && !math.IsInf(a.Min, 0) && !math.IsInf(a.Max, 0)
+}
+
 // resolve gives the range of an axis: its Min and Max when set, otherwise the data with some margin
 func resolve(a Axis, lo, hi float64, haveData bool) (float64, float64) {
-	if a.Min < a.Max && !math.IsInf(a.Min, 0) && !math.IsInf(a.Max, 0) {
+	if fixed(a) {
 		return a.Min, a.Max
+	}
+	if a.Scale == Log {
+		if !haveData || hi <= 0 {
+			return 1, 10
+		}
+		if lo <= 0 {
+			lo = hi / 1e3
+		}
+		if lo == hi {
+			return lo / 2, hi * 2
+		}
+		pad := math.Pow(hi/lo, 0.02)
+		return lo / pad, hi * pad
 	}
 	if !haveData {
 		return 0, 1
@@ -145,28 +186,37 @@ func resolve(a Axis, lo, hi float64, haveData bool) (float64, float64) {
 	return lo - pad, hi + pad
 }
 
-// Save draws the plot at a size in a PNG file
+// Save draws the plot at a size in a file: a PNG or an SVG, chosen by the extension of the path
 func (p *Plot) Save(w, h Length, path string) error {
 	if path == "" {
 		return errors.New("plot: Save needs a path")
 	}
-	if !strings.HasSuffix(strings.ToLower(path), ".png") {
-		return fmt.Errorf("plot: %s: only PNG files are supported", path)
+	ext := strings.ToLower(filepath.Ext(path))
+	if ext != ".png" && ext != ".svg" {
+		return fmt.Errorf("plot: %s: only PNG and SVG files are supported", path)
 	}
 	if w <= 0 || h <= 0 {
 		return errors.New("plot: size must be positive")
 	}
-	img := p.render(int(float64(w)*dpi/72), int(float64(h)*dpi/72))
+	pw, ph := pixelSize(int(float64(w)*dpi/72), int(float64(h)*dpi/72))
+	if ext == ".svg" {
+		s := newSVG(pw, ph)
+		p.paint(s, pw, ph)
+		return os.WriteFile(path, []byte(s.finish()), 0o644)
+	}
 	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
-	if err := png.Encode(f, img); err != nil {
+	if err := png.Encode(f, p.render(pw, ph)); err != nil {
 		f.Close()
 		return err
 	}
 	return f.Close()
 }
+
+// pixelSize applies the minimum size of a plot
+func pixelSize(pw, ph int) (int, int) { return max(pw, 40), max(ph, 40) }
 
 var (
 	axisColor  = color.RGBA{60, 60, 60, 255}
@@ -177,14 +227,15 @@ var (
 )
 
 func (p *Plot) render(pw, ph int) *image.RGBA {
-	if pw < 40 {
-		pw = 40
-	}
-	if ph < 40 {
-		ph = 40
-	}
+	pw, ph = pixelSize(pw, ph)
+	c := newCanvas(pw*supersample, ph*supersample)
+	p.paint(c, pw, ph)
+	return c.downsample()
+}
+
+// paint draws the plot on a drawer of pw x ph pixels (times supersample)
+func (p *Plot) paint(c drawer, pw, ph int) {
 	W, H := pw*supersample, ph*supersample
-	c := newCanvas(W, H)
 	const tu, titleU, pad, tickLen = 3, 4, 12, 8
 
 	// ranges and ticks
@@ -199,7 +250,23 @@ func (p *Plot) render(pw, ph int) *image.RGBA {
 	m := &mapping{scale: dpi / 72.0 * supersample}
 	m.xmin, m.xmax = resolve(p.X, xlo, xhi, have)
 	m.ymin, m.ymax = resolve(p.Y, ylo, yhi, have)
+	m.xlog, m.ylog = p.X.Scale == Log, p.Y.Scale == Log
 	xm, ym := p.X.Tick.Marker, p.Y.Tick.Marker
+	for _, pl := range p.plotters {
+		// bars start at the axis: no margin below zero
+		if zb, ok := pl.(interface{ zeroBased() bool }); ok && zb.zeroBased() && !m.ylog && !fixed(p.Y) && ylo == 0 {
+			m.ymin = 0
+		}
+		if tp, ok := pl.(TickMarker); ok && xm == nil {
+			xm = tp
+		}
+	}
+	if xm == nil && m.xlog {
+		xm = LogTicks{}
+	}
+	if ym == nil && m.ylog {
+		ym = LogTicks{}
+	}
 	if xm == nil {
 		xm = niceTicks{target: max(3, pw/90)}
 	}
@@ -232,16 +299,16 @@ func (p *Plot) render(pw, ph int) *image.RGBA {
 	}
 	m.area = image.Rect(left, top, W-right, H-bottom)
 	if m.area.Dx() < 10 || m.area.Dy() < 10 {
-		return c.downsample()
+		return
 	}
 
 	// grid-like plotters and data, clipped to the area
-	full := c.clip
-	c.clip = m.area
+	full := c.getClip()
+	c.setClip(m.area)
 	for _, pl := range p.plotters {
 		pl.draw(c, m)
 	}
-	c.clip = full
+	c.setClip(full)
 
 	// axes
 	lw := float64(supersample)
@@ -285,10 +352,9 @@ func (p *Plot) render(pw, ph int) *image.RGBA {
 		c.text(s, (W-textWidth(s, titleU))/2, pad, titleU, textColor, false)
 	}
 	p.drawLegend(c, m, tu)
-	return c.downsample()
 }
 
-func (p *Plot) drawLegend(c *canvas, m *mapping, u int) {
+func (p *Plot) drawLegend(c drawer, m *mapping, u int) {
 	var entries []legendEntry
 	for _, e := range p.Legend.entries {
 		if e.name != "" {
@@ -314,8 +380,6 @@ func (p *Plot) drawLegend(c *canvas, m *mapping, u int) {
 		y0 = m.area.Min.Y + 10
 	}
 	box := image.Rect(x0, y0, x0+boxW, y0+boxH)
-	saved := c.clip
-	c.clip = saved
 	c.fillRect(box, boxColor)
 	for _, r := range []image.Rectangle{
 		{box.Min, image.Pt(box.Max.X, box.Min.Y+1)}, {image.Pt(box.Min.X, box.Max.Y-1), box.Max},
@@ -444,4 +508,50 @@ func AddLines(p *Plot, vs ...any) error {
 		}
 	}
 	return nil
+}
+
+// LogTicks puts labelled ticks on the powers of ten (1, 10, 100, 1k, 10k, 1M, 0.1, ...) and small
+// unlabelled ticks on 2..9 times a power of ten. When less than two powers of ten fit the range, 2
+// and 5 get a label too. Use it on an axis with Scale Log (that is the default there)
+type LogTicks struct{}
+
+func (LogTicks) Ticks(min, max float64) []Tick {
+	if !(min > 0) || !(max > min) {
+		return nil
+	}
+	lo, hi := int(math.Floor(math.Log10(min))), int(math.Ceil(math.Log10(max)))
+	decades := 0
+	for e := lo; e <= hi; e++ {
+		if v := math.Pow10(e); v >= min*(1-1e-9) && v <= max*(1+1e-9) {
+			decades++
+		}
+	}
+	var ticks []Tick
+	for e := lo; e <= hi; e++ {
+		for k := 1; k <= 9; k++ {
+			v := float64(k) * math.Pow10(e)
+			if v < min*(1-1e-9) || v > max*(1+1e-9) {
+				continue
+			}
+			t := Tick{Value: v}
+			if k == 1 || (decades < 2 && (k == 2 || k == 5)) {
+				t.Label = formatLog(v)
+			}
+			ticks = append(ticks, t)
+		}
+	}
+	return ticks
+}
+
+// formatLog writes 1, 10, 100, 1k, 10k, 1M, 0.1, 0.01
+func formatLog(v float64) string {
+	switch a := math.Abs(v); {
+	case a >= 1e6:
+		return strconv.FormatFloat(v/1e6, 'g', 4, 64) + "M"
+	case a >= 1e3:
+		return strconv.FormatFloat(v/1e3, 'g', 4, 64) + "k"
+	case a >= 1e-3:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	}
+	return strconv.FormatFloat(v, 'g', 4, 64)
 }

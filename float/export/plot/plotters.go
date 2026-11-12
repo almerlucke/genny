@@ -55,7 +55,7 @@ func NewLine(xys XYer) (*Line, error) {
 
 func (l *Line) dataRange() (a, b, d, e float64, ok bool) { return rangeOf(l.XYer) }
 
-func (l *Line) draw(c *canvas, m *mapping) {
+func (l *Line) draw(c drawer, m *mapping) {
 	pts := make([]pt, l.Len())
 	for i := range pts {
 		x, y := l.XY(i)
@@ -64,25 +64,25 @@ func (l *Line) draw(c *canvas, m *mapping) {
 	c.polyline(pts, float64(l.Width)*m.scale, l.Color)
 }
 
-func (l *Line) thumbnail(c *canvas, r image.Rectangle) {
+func (l *Line) thumbnail(c drawer, r image.Rectangle) {
 	y := float64(r.Min.Y+r.Max.Y) / 2
 	c.segment(pt{float64(r.Min.X), y}, pt{float64(r.Max.X), y}, math.Max(float64(l.Width)*dpi/72*supersample, 2), l.Color)
 }
 
 // Glyph draws a point of a scatter plot
 type Glyph interface {
-	drawGlyph(c *canvas, x, y, radius float64, col color.Color)
+	drawGlyph(c drawer, x, y, radius float64, col color.Color)
 }
 
 // CircleGlyph is a filled circle
 type CircleGlyph struct{}
 
-func (CircleGlyph) drawGlyph(c *canvas, x, y, r float64, col color.Color) { c.disc(x, y, r, col) }
+func (CircleGlyph) drawGlyph(c drawer, x, y, r float64, col color.Color) { c.disc(x, y, r, col) }
 
 // BoxGlyph is a filled square
 type BoxGlyph struct{}
 
-func (BoxGlyph) drawGlyph(c *canvas, x, y, r float64, col color.Color) {
+func (BoxGlyph) drawGlyph(c drawer, x, y, r float64, col color.Color) {
 	c.fillRect(image.Rect(int(math.Round(x-r)), int(math.Round(y-r)), int(math.Round(x+r)), int(math.Round(y+r))), col)
 }
 
@@ -109,7 +109,7 @@ func NewScatter(xys XYer) (*Scatter, error) {
 
 func (s *Scatter) dataRange() (a, b, d, e float64, ok bool) { return rangeOf(s.XYer) }
 
-func (s *Scatter) draw(c *canvas, m *mapping) {
+func (s *Scatter) draw(c drawer, m *mapping) {
 	r := math.Max(float64(s.Radius)*m.scale, 0.75)
 	for i := 0; i < s.Len(); i++ {
 		x, y := s.XY(i)
@@ -117,7 +117,7 @@ func (s *Scatter) draw(c *canvas, m *mapping) {
 	}
 }
 
-func (s *Scatter) thumbnail(c *canvas, r image.Rectangle) {
+func (s *Scatter) thumbnail(c drawer, r image.Rectangle) {
 	s.Shape.drawGlyph(c, float64(r.Min.X+r.Max.X)/2, float64(r.Min.Y+r.Max.Y)/2, math.Max(float64(s.Radius)*dpi/72*supersample, 3), s.Color)
 }
 
@@ -146,7 +146,7 @@ func NewPolygon(polys ...XYer) (*Polygon, error) {
 
 func (p *Polygon) dataRange() (a, b, d, e float64, ok bool) { return rangeOf(p.XYs...) }
 
-func (p *Polygon) draw(c *canvas, m *mapping) {
+func (p *Polygon) draw(c drawer, m *mapping) {
 	for _, xys := range p.XYs {
 		pts := make([]pt, xys.Len())
 		for i := range pts {
@@ -162,7 +162,7 @@ func (p *Polygon) draw(c *canvas, m *mapping) {
 	}
 }
 
-func (p *Polygon) thumbnail(c *canvas, r image.Rectangle) {
+func (p *Polygon) thumbnail(c drawer, r image.Rectangle) {
 	if p.Color != nil {
 		c.fillRect(r, p.Color)
 	}
@@ -176,7 +176,7 @@ func NewGrid() *Grid { return &Grid{} }
 
 func (*Grid) dataRange() (a, b, d, e float64, ok bool) { return 0, 0, 0, 0, false }
 
-func (*Grid) draw(c *canvas, m *mapping) {
+func (*Grid) draw(c drawer, m *mapping) {
 	w := float64(supersample)
 	for _, t := range m.xticks {
 		if t.Label != "" {

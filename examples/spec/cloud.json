@@ -1,0 +1,34 @@
+{
+  "tempo": 90,
+  "seed": 21,
+  "tracks": [
+    {
+      "name": "cloud", "channel": 0, "program": 88,
+      "source": {
+        "kind": "cloud",
+        "params": {"length": 128, "density": 0.1, "density_end": 1.5, "low": "C3", "high": "C6", "scale": "minor_pentatonic", "root": "A2", "duration_min": 2, "duration_max": 10, "velocity_min": 0.2, "velocity_max": 0.7}
+      }
+    },
+    {
+      "name": "mask", "channel": 1, "program": 98,
+      "source": {
+        "kind": "tendency",
+        "params": {"length": 128, "step": 2, "note_length": 3, "scale": "minor_pentatonic", "root": "A2", "beta": [1, 2],
+          "segments": [
+            {"n": 16, "low": 60, "high": 62, "end_low": 52, "end_high": 76},
+            {"n": 16, "low": 52, "high": 76, "end_low": 70, "end_high": 72},
+            {"n": 32, "low": 70, "high": 72, "end_low": 36, "end_high": 96}
+          ]}
+      }
+    },
+    {
+      "name": "thinned", "channel": 2, "program": 14,
+      "source": {
+        "kind": "thin", "params": {"keep": 0.4, "item": {
+          "kind": "sieve",
+          "params": {"expr": "(3@0|5@1)&!2@0", "lo": 0, "hi": 20, "mode": "pitches", "root": "A3", "scale": "minor_pentatonic", "length": 128, "step": 1.5, "note_length": 6, "velocity": 0.5}
+        }}
+      }
+    }
+  ]
+}

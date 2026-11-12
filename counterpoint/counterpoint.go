@@ -3,8 +3,8 @@
 // the same line.
 //
 // First species (Generate, Check) is note against note. Second species (GenerateSecond, CheckSecond) is two
-// notes against one; it is simpler than first species and flagged as experimental: it implements the rules
-// listed at GenerateSecond, not the full theory.
+// notes against one; its rules are listed below and at GenerateSecond. It is a faithful but not a complete
+// version of Fux's second species (see the limitations there).
 //
 // Pitches are integers in semitones (MIDI note numbers).
 //
@@ -18,6 +18,14 @@
 //     more than a whole tone)
 //   - no note repeated more than twice in a row
 //   - one climax: the highest note of the line occurs once
+//
+// Second species (CheckSecond) adds to these, for the notes on the beat (strong) and off the beat (weak):
+//   - strong notes obey the first species rules (consonant, perfect first and last note, no parallel or
+//     direct perfect intervals between successive beats, and no fifth or octave on two successive beats
+//     even in contrary motion)
+//   - a weak note is consonant or a dissonant passing tone (reached and left by step in the same
+//     direction) or neighbour tone (reached and left by step, back to the note it came from)
+//   - the last note is approached by step from the weak note before it (the penultimate approach)
 //
 // Contrary and oblique motion are not rules but preferences: the generator tries those first
 package counterpoint
@@ -63,6 +71,15 @@ type Config struct {
 	MaxDistance int
 	// Low and High limit the pitches of the counterpoint; they only apply if High > Low
 	Low, High int
+	// Filter, if set, limits the pitches of the line further: pitch p is only used for note j (an index into
+	// the counterpoint) when Filter(j, p) is true. It is for rules about other voices, for instance to stay
+	// consonant with a third voice. Check does not know it
+	Filter func(j, pitch int) bool
+	// Invertible writes a line that can swap places with the cantus by moving one of them an octave: no
+	// interval of a fifth anywhere (it would become a dissonant fourth) and a distance of less than
+	// an octave, except on the first and last note (so the voices do not cross or meet when one
+	// moves). Thirds, sixths and octaves stay consonant
+	Invertible bool
 	// Budget is the maximal number of search steps before the generator gives up (default 200000)
 	Budget int
 }
@@ -92,20 +109,22 @@ func (v Violation) String() string { return fmt.Sprintf("note %d: %s: %s", v.Ind
 
 // The names of the rules in Violation.Rule
 const (
-	RuleLength     = "length"
-	RuleConsonance = "consonance"
-	RuleFirst      = "first"
-	RuleLast       = "last"
-	RuleSide       = "side"
-	RuleUnison     = "unison"
-	RuleDistance   = "distance"
-	RuleParallel   = "parallel"
-	RuleDirect     = "direct"
-	RuleLeap       = "leap"
-	RuleLeaps      = "leaps"
-	RuleRepeat     = "repeat"
-	RuleClimax     = "climax"
-	RulePassing    = "passing"
+	RuleLength      = "length"
+	RuleConsonance  = "consonance"
+	RuleFirst       = "first"
+	RuleLast        = "last"
+	RuleSide        = "side"
+	RuleUnison      = "unison"
+	RuleDistance    = "distance"
+	RuleParallel    = "parallel"
+	RuleDirect      = "direct"
+	RuleLeap        = "leap"
+	RuleLeaps       = "leaps"
+	RuleRepeat      = "repeat"
+	RuleClimax      = "climax"
+	RulePassing     = "passing"
+	RulePenultimate = "penultimate"
+	RuleInvertible  = "invertible"
 )
 
 func mod12(x int) int { return ((x % 12) + 12) % 12 }
@@ -134,6 +153,10 @@ func consonant(interval int) bool {
 	}
 	return false
 }
+
+// Consonant tells if an interval in semitones (compound intervals and either direction included) is a
+// consonance in the strict style: unison, third, fifth, sixth and octave. The fourth is a dissonance
+func Consonant(interval int) bool { return consonant(interval) }
 
 func perfect(interval int) bool {
 	m := mod12(interval)
@@ -249,6 +272,18 @@ func (c Config) violationsAt(cf, cp []int, j, spp int) []Violation {
 		add(RuleDistance, "pitch %d outside the range %d..%d", p, c.Low, c.High)
 	}
 
+	if c.Invertible {
+		if mod12(iv) == 7 {
+			add(RuleInvertible, "a fifth becomes a fourth when the voices swap")
+		}
+		if abs(iv) > 12 {
+			add(RuleInvertible, "%d semitones from the cantus, more than an octave", abs(iv))
+		}
+		if abs(iv) == 12 && j > 0 && j < n-1 {
+			add(RuleInvertible, "an octave in the middle of the line becomes a unison when the voices swap")
+		}
+	}
+
 	st := strong(j, spp)
 	cons := consonant(iv)
 	switch {
@@ -268,12 +303,21 @@ func (c Config) violationsAt(cf, cp []int, j, spp int) []Violation {
 		add(RuleUnison, "a unison in the middle of the line")
 	}
 
-	// a dissonance on a weak note must have been a passing tone: reached and left by step, in one direction
+	// a dissonance on a weak note must have been a passing tone (reached and left by step in one direction)
+	// or a neighbour tone (reached and left by step, returning to the note it came from)
 	if j >= 2 && !strong(j-1, spp) && !consonant(prevInterval(cf, cp, j-1, spp, c.Side)) {
 		a, b := cp[j-1]-cp[j-2], cp[j]-cp[j-1]
-		if abs(a) < 1 || abs(a) > 2 || abs(b) < 1 || abs(b) > 2 || sign(a) != sign(b) {
-			add(RulePassing, "the dissonance on note %d is not a passing tone", j-1)
+		stepwise := abs(a) >= 1 && abs(a) <= 2 && abs(b) >= 1 && abs(b) <= 2
+		passing := sign(a) == sign(b)
+		neighbour := sign(a) == -sign(b) && p == cp[j-2]
+		if !stepwise || !(passing || neighbour) {
+			add(RulePassing, "the dissonance on note %d is not a passing or neighbour tone", j-1)
 		}
+	}
+
+	// the penultimate approach: the last note is reached by step
+	if spp > 1 && j == n-1 && j > 0 && (abs(p-cp[j-1]) < 1 || abs(p-cp[j-1]) > 2) {
+		add(RulePenultimate, "the last note is approached by a step, not %d semitones", abs(p-cp[j-1]))
 	}
 
 	if j > 0 {
@@ -335,12 +379,17 @@ func perfectName(iv int) string {
 // what is wrong. It returns nil and no error for an empty cantus. It never panics
 func Generate(cf []int, cfg Config) ([]int, error) { return generate(cf, cfg, 1) }
 
-// GenerateSecond writes second species counterpoint (EXPERIMENTAL): two notes against each note of the
+// GenerateSecond writes second species counterpoint: two notes against each note of the
 // cantus, 2*len(cf)-1 notes in all (the last cantus note gets one). On the beat (every first note of
 // a pair) the rules of first species apply: consonance, perfect first and last note, no parallel or
-// direct perfect intervals between successive beats, one climax. The second note of a pair may be a
-// dissonance when it is a passing tone: reached and left by step in the same direction. Leaps, repeated
-// notes and the range are limited as in first species. The cantus firmus needs no particular form
+// direct perfect intervals between successive beats (and no fifth or octave on two successive beats at
+// all), one climax. The second note of a pair is consonant or a dissonant passing tone (reached and left
+// by step in the same direction) or neighbour tone (reached and left by step, returning). The last note
+// is approached by step. Leaps, repeated notes and the range are limited as in first species.
+//
+// Limitations: the line always begins on the beat (no opening rest, as Fux has it), weak notes are not
+// checked for parallels with the cantus, and the cantus firmus needs no particular form, so a very
+// short or narrow one can fail with ErrNoSolution (see CheckSecond for what is then broken)
 func GenerateSecond(cf []int, cfg Config) ([]int, error) { return generate(cf, cfg, 2) }
 
 type candidate struct {
@@ -375,7 +424,7 @@ func generate(cf []int, cfg Config, spp int) ([]int, error) {
 		}
 		var out []candidate
 		for p := lo; p <= hi; p++ {
-			if !allowed[mod12(p)] {
+			if !allowed[mod12(p)] || (cfg.Filter != nil && !cfg.Filter(j, p)) {
 				continue
 			}
 			cp = append(cp, p)

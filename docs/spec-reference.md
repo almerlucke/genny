@@ -90,8 +90,8 @@ Weighted random choice of pitches (or rests) on every step (package choose).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `options` | array | `required` | objects {pitch, weight}; pitch null is a rest; weight default 1 |
-| `length` | number | `required` | length of the line in steps |
+| `options` | array | **required** | objects {pitch, weight}; pitch null is a rest; weight default 1 |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -102,7 +102,7 @@ A melody over a chord progression: chord tones on strong beats, scale tones betw
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `bars` | int | `required` | number of bars (one chord per bar) |
+| `bars` | int | **required** | number of bars (one chord per bar) |
 | `bar_steps` | int | `16` | steps per bar |
 | `scale` | scale | `major` | scale the chords are built on |
 | `root` | pitch | `60` | root of the scale (degree 1) |
@@ -121,8 +121,8 @@ Stochastic cloud: Poisson onsets with a density that can ramp, uniform pitches (
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `length` | number | `required` | length in steps |
-| `density` | number | `required` | mean events per step |
+| `length` | number | **required** | length in steps |
+| `density` | number | **required** | mean events per step |
 | `density_end` | number | `density` | density at the end: the density ramps linearly |
 | `low` | pitch | `36` | lowest pitch |
 | `high` | pitch | `84` | highest pitch |
@@ -139,11 +139,11 @@ A Euclidean rhythm: pulses spread evenly over steps, repeated (package euclid).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `steps` | int | `required` | steps of the pattern, 1..256 |
-| `pulses` | int | `required` | pulses, 0..steps |
+| `steps` | int | **required** | steps of the pattern, 1..256 |
+| `pulses` | int | **required** | pulses, 0..steps |
 | `rotation` | int | `0` | rotate the pattern left |
 | `pitch` | pitch | `36` | pitch of every pulse |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -163,7 +163,7 @@ A melodic walk over scale degrees: mostly steps, sometimes leaps (package scale)
 | `leap_prob` | number | `0.15` | chance of a leap |
 | `max_leap` | int | `4` | largest leap in degrees |
 | `rest_prob` | number | `0` | chance of a rest instead of a note |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -174,7 +174,7 @@ Literal notes: [{pitch, start, duration, velocity}].
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `notes` | array | `required` | objects with pitch (number or name), start (steps), duration (default 1), velocity (default 0.8) |
+| `notes` | array | **required** | objects with pitch (number or name), start (steps), duration (default 1), velocity (default 0.8) |
 | `length` | number | `end of the last note` | length of the line in steps |
 
 ### numseq
@@ -183,12 +183,12 @@ Number sequences as scale degrees (package numseq).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `seq` | string | `required` | fibonacci, collatz, thue_morse or primes |
+| `seq` | string | **required** | fibonacci, collatz, thue_morse or primes |
 | `mod` | int | `7` | values are reduced modulo mod before they become degrees |
 | `start` | int | `7` | collatz: start number |
 | `scale` | scale | `major` | scale for the degrees |
 | `root` | pitch | `60` | root of the scale |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -199,7 +199,7 @@ Chords, roots or arpeggios over a progression (a Markov chain over scale degrees
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `bars` | int | `required` | number of bars (one chord per bar) |
+| `bars` | int | **required** | number of bars (one chord per bar) |
 | `bar_steps` | int | `16` | steps per bar |
 | `scale` | scale | `major` | scale the chords are built on |
 | `root` | pitch | `60` | root of the scale (degree 1) |
@@ -217,11 +217,11 @@ Metric hierarchy (indispensability): thinned by a level, velocity follows import
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `divisions` | array | `required` | nested divisions of the meter, e.g. [2,2,2,2] for 16 steps or [3,2,2] |
+| `divisions` | array | **required** | nested divisions of the meter, e.g. [2,2,2,2] for 16 steps or [3,2,2] |
 | `level` | int | `0` | pulses less important than this rest; 0 plays all |
 | `velocity_low` | number | `0.4` | velocity of the weakest pulse (velocity is that of the first) |
 | `pitch` | pitch | `42` | pitch of the notes |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -236,7 +236,7 @@ A tone row played in forms (prime, retrograde, inversion, retrograde_inversion) 
 | `size` | int | `12` | size of the random row |
 | `forms` | array | `[prime]` | objects {op, transpose} played one after the other, looping |
 | `root` | pitch | `60` | added to every pitch class |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -247,14 +247,14 @@ Xenakis sieves: an expression of residue classes, used as rhythm gate or pitch s
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `expr` | string | `required` | residue classes mod@start joined with & \| - ! and (), e.g. (3@0\|5@1)&!2@0 |
+| `expr` | string | **required** | residue classes mod@start joined with & \| - ! and (), e.g. (3@0\|5@1)&!2@0 |
 | `lo` | int | `0` | lowest member of the range |
 | `hi` | int | `15` | highest member of the range |
 | `mode` | string | `gate` | gate (a note on each step that is a member, cycle hi+1) or pitches (members played in turn, looping) |
 | `pitch` | pitch | `60` | gate mode: pitch of the notes |
 | `root` | pitch | `60` | pitches mode: pitch of member 0 |
 | `scale` | scale | `none` | pitches mode: members are scale degrees instead of semitones |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -265,12 +265,12 @@ Koenig tendency mask: random pitches inside a band that moves (package float/ten
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `segments` | array | `required` | objects {n, low, high, end_low, end_high}: over n notes the band glides from low..high to end_low..end_high (default: stays) |
+| `segments` | array | **required** | objects {n, low, high, end_low, end_high}: over n notes the band glides from low..high to end_low..end_high (default: stays) |
 | `loop` | bool | `false` | start the mask again after the last segment |
 | `scale` | scale | `none` | quantize the pitches to this scale |
 | `root` | pitch | `60` | root of the scale |
 | `beta` | array | `uniform` | [a, b] beta distribution: a<b favours the low edge, a>b the high edge |
-| `length` | number | `required` | length of the line in steps |
+| `length` | number | **required** | length of the line in steps |
 | `step` | number | `1` | steps between notes |
 | `note_length` | number | `step` | duration of a note in steps |
 | `velocity` | number | `0.8` | velocity in [0, 1] |
@@ -302,10 +302,10 @@ The item as a canon: voice i enters i*delay steps later and i*interval semitones
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `delay` | number | `required` | steps between entries |
+| `delay` | number | **required** | steps between entries |
 | `interval` | number | `0` | semitones between voices |
 | `voices` | int | `2` | number of voices, 1..16 |
-| `item` | node | `required` | the node to work on |
+| `item` | node | **required** | the node to work on |
 
 ### concat
 
@@ -313,7 +313,7 @@ Play the items one after the other (each starts where the one before ends).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `items` | array of nodes | `required` | the nodes |
+| `items` | array of nodes | **required** | the nodes |
 
 ### gain
 
@@ -321,8 +321,8 @@ Scale the velocities (clamped to [0, 1]).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `factor` | number | `required` | >= 0 |
-| `item` | node | `required` | the node to work on |
+| `factor` | number | **required** | >= 0 |
+| `item` | node | **required** | the node to work on |
 
 ### humanize
 
@@ -332,7 +332,7 @@ Random jitter of start time and velocity (package groove).
 |---|---|---|---|
 | `timing` | number | `0` | maximum shift of the start in steps |
 | `velocity` | number | `0` | maximum velocity change |
-| `item` | node | `required` | the node to work on |
+| `item` | node | **required** | the node to work on |
 
 ### invert
 
@@ -343,7 +343,7 @@ Mirror the pitches around an axis, chromatically or within a scale.
 | `axis` | pitch | `first note` | the axis of the mirror |
 | `scale` | scale | `none` | with a scale the mirror is diatonic |
 | `root` | pitch | `0` | root of the scale |
-| `item` | node | `required` | the node to work on |
+| `item` | node | **required** | the node to work on |
 
 ### layer
 
@@ -351,7 +351,7 @@ Play the items together (merge is the same).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `items` | array of nodes | `required` | the nodes |
+| `items` | array of nodes | **required** | the nodes |
 
 ### merge
 
@@ -359,7 +359,7 @@ Same as layer.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `items` | array of nodes | `required` | the nodes |
+| `items` | array of nodes | **required** | the nodes |
 
 ### quantize
 
@@ -367,9 +367,9 @@ Move every pitch to the nearest pitch of a scale.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `scale` | scale | `required` | the scale |
+| `scale` | scale | **required** | the scale |
 | `root` | pitch | `0` | root of the scale |
-| `item` | node | `required` | the node to work on |
+| `item` | node | **required** | the node to work on |
 
 ### repeat
 
@@ -377,8 +377,8 @@ Repeat the item n times (package line Loop); the item is built once, so random i
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `n` | int | `required` | number of times, 1..1000 |
-| `item` | node | `required` | the node to work on |
+| `n` | int | **required** | number of times, 1..1000 |
+| `item` | node | **required** | the node to work on |
 
 ### retrograde
 
@@ -386,7 +386,7 @@ Play the item backwards within its length.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `item` | node | `required` | the node to work on |
+| `item` | node | **required** | the node to work on |
 
 ### shift
 
@@ -394,8 +394,8 @@ Move the item later by steps (rest before it).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `steps` | number | `required` | >= 0 |
-| `item` | node | `required` | the node to work on |
+| `steps` | number | **required** | >= 0 |
+| `item` | node | **required** | the node to work on |
 
 ### slice
 
@@ -404,8 +404,8 @@ Keep the notes that start in [from, to) and move them to start at 0.
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
 | `from` | number | `0` | first step |
-| `to` | number | `required` | end step |
-| `item` | node | `required` | the node to work on |
+| `to` | number | **required** | end step |
+| `item` | node | **required** | the node to work on |
 
 ### stretch
 
@@ -413,8 +413,8 @@ Multiply times and durations: 2 is twice as slow.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `factor` | number | `required` | in (0, 64] |
-| `item` | node | `required` | the node to work on |
+| `factor` | number | **required** | in (0, 64] |
+| `item` | node | **required** | the node to work on |
 
 ### swing
 
@@ -422,9 +422,9 @@ Delay the notes on odd steps (package groove).
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `amount` | number | `required` | delay in fractions of a step; 1/3 is a triplet feel |
+| `amount` | number | **required** | delay in fractions of a step; 1/3 is a triplet feel |
 | `humanize` | number | `0` | random timing jitter in steps |
-| `item` | node | `required` | the node to work on |
+| `item` | node | **required** | the node to work on |
 
 ### thin
 
@@ -432,8 +432,8 @@ Keep each note with a probability.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `keep` | number | `required` | probability in [0, 1] |
-| `item` | node | `required` | the node to work on |
+| `keep` | number | **required** | probability in [0, 1] |
+| `item` | node | **required** | the node to work on |
 
 ### transpose
 
@@ -441,8 +441,8 @@ Move all pitches by semitones.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `semitones` | number | `required` | may be negative or fractional |
-| `item` | node | `required` | the node to work on |
+| `semitones` | number | **required** | may be negative or fractional |
+| `item` | node | **required** | the node to work on |
 
 ## Examples
 

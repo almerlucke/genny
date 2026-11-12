@@ -84,7 +84,7 @@ func Reference() string {
 			w("| Parameter | Type | Default | Meaning |\n|---|---|---|---|\n")
 			for _, p := range k.Params {
 				def := "**required**"
-				if p.Default != "" {
+				if p.Default != "" && p.Default != "required" {
 					def = "`" + p.Default + "`"
 				}
 				w("| `%s` | %s | %s | %s |\n", p.Name, cell(p.Type), cell(def), cell(p.Doc))

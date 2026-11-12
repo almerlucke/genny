@@ -70,6 +70,7 @@ above 1).
 | Package | What it does |
 |---|---|
 | `euclid` | Euclidean rhythms (Bjorklund): 5 pulses in 8 steps is x.xx.xx. |
+| `polyrhythm` | Exact polyrhythms (3:2, 5:4, 7:4, nested tuplets, cross rhythms, additive meters such as 3+3+2) in rational time, LCM grids, cycles and realignment, and metric modulation: sections whose tempo follows from a subdivision becoming the beat, written as MIDI tempo changes |
 | `rest` | Rests: `Gated` by a gate generator, or `Probability` thins a melody out |
 | `pulse` | Metric hierarchy (Barlow style): thin a rhythm by importance, fade it in and out with a level generator |
 | `clock` | `Divider` (every nth step) and `Poly` (cycles of different lengths) |
@@ -85,7 +86,10 @@ above 1).
 | `scale` | Scales (modes, Messiaen's modes, pentatonic, blues, just intonation, n equal divisions, Scala `.scl` files), quantizing, `Walk` over degrees |
 | `chord` | Chords, inversions, diatonic chords from a scale, a `VoiceLeader` for smooth voice leading, spectral chords (harmonic, FM, ring modulation) |
 | `line` | Transformations of whole lines of note events: canon, inversion, retrograde, augmentation, loop, thin |
-| `counterpoint` | First species counterpoint against a cantus firmus, with a rule checker (second species experimental) |
+| `counterpoint` | First and second species counterpoint against a cantus firmus, with rule checkers (`Check`, `CheckSecond`); `Invertible` for lines that can swap places at the octave |
+| `fugue` | A fugue from a subject: tonal or real answer, invertible countersubject, exposition, episodes, middle entries, stretto, closing pedal, and a checker that every entry is the subject or answer |
+| `harmony` | Functional harmony (tonic-subdominant-dominant grammar, cadence-aware phrases, secondary dominants, sevenths, borrowed chords, modulation) as a `Generator[Chord]`; `Realize` writes a progression in four voices with voice-leading rules and `Check` lists violations |
+| `microtonal` | Tunings (n-EDO, just intonation, Bohlen-Pierce, Scala files) played through MIDI pitch bend: one channel for a single line, or MPE with a channel per note so chords work |
 | `melody` | A melody over chords: chord tones on strong beats, scale tones between |
 | `progression` | Chord progressions as a Markov chain (pop, classical, jazz, blues), or your own table |
 | `row` | Tone rows: retrograde, inversion, transposition, the twelve tone matrix, permutations and all-interval rows |
@@ -126,12 +130,13 @@ above 1).
 | `shapers/wavefold`, `saturate`, `rectify`, `curve`, `smoothstep`, `deadzone`, `harmonics`, `polynomial` | Wavefolders (sine, triangle), tanh/atan/logistic/tube saturation, rectifiers, bend curves, S-curves, dead zone and expander, additive harmonics, polynomials (Legendre) |
 | `shapers/phasedist`, `window` | Casio CZ phase distortion (saw, square, pulse, resonant); window functions (Hann, Hamming, Blackman, Tukey, Gaussian, Kaiser, Welch) |
 | `shapers/bitcrush`, `hysteresis`, `onepole`, `samplehold`, `funnel` | Shapers with memory (bit and sample rate reduction, Schmitt trigger and backlash, one-pole filter, sample and hold) and snapping to a scale, a sieve or a set of values |
-| `float/export/plot` | A small plotting package of its own (standard library only): lines, scatter, polygons, grid, legend, piano roll, PNG output |
+| `float/export/plot` | A small plotting package of its own (standard library only), PNG or SVG by file extension: lines, scatter, polygons, grid, histogram, bars, spectrum (own FFT, `SpectrumOf`, `ShaperSpectrum`), log axes, legend, piano roll |
 
 ### Notes and output
 
 | Package | What it does |
 |---|---|
+| `spec` | Renders a piece described in JSON (generators and combinators from one table of kinds) to MIDI; used by `cmd/genny` |
 | `note` | A `Voice` turns generators (pitch with rests, velocity, length, timing offset, ratchets) into note events |
 | `midi` | Reads and writes Standard MIDI Files: tempo and meter changes, controllers, program changes, pitch bend for microtonal pitches |
 | `ngram/style` | Learns pitches and durations from imported events (as intervals and ratios, so it transposes) and plays new music in that style |
@@ -152,7 +157,13 @@ go run ./examples/shapes -seed 3 -mid sh.mid       # a piece sculpted by shapers
 go run ./examples/counterpoint -seed 3 -mid cp.mid # counterpoint, canon, isorhythm, phasing
 go run ./examples/evolve -seed 3 -mid e.mid     # Game of Life, stochastic cloud, evolved melody, Bohlen-Pierce
 go run ./examples/learnstyle -seed 3 -mid l.mid  # reads a MIDI file, learns its style, plays new music in it
+go run ./examples/fugue -seed 3 -mid f.mid       # a four-voice fugue in D minor, one MIDI channel per voice
+go run ./examples/harmony -seed 3 -mid h.mid     # a chorale in four voices: G major to D major and back
+go run ./examples/polyrhythm -mid p.mid          # 3:2, 5:4 and 7:4 joined by metric modulations
+go run ./examples/microtonal -seed 3 -mid m.mid  # 31-EDO, harmonic series and Bohlen-Pierce (MPE bends)
+go run ./cmd/genny render examples/spec/groove.json -o g.mid   # a piece described in JSON (see cmd/genny/README.md)
 go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
+go run ./examples/plotextras plots             # histogram, pitch classes and spectra as PNG and SVG
 ```
 
 ## Dependencies
@@ -163,5 +174,12 @@ PNG renderer and bitmap font) use only the Go standard library.
 ## Tests
 
 ```sh
-go test ./...
+go test ./...                                    # unit, example, property and seed tests
+go test -run xxx -bench . -benchmem ./float/shape/shapers/... ./float/noise ./float/dist \
+    ./float/iter/updaters/chaos ./sieve ./float/tendency ./midi   # benchmarks
+go test -fuzz=FuzzReadRoundTrip -fuzztime=20s ./midi              # fuzz (also FuzzParseSclSane in scale,
+                                                                  # FuzzSieveAlgebra, FuzzExpand, FuzzGenerate)
 ```
+
+Under plain `go test` the fuzz tests only run their seed corpora. `prop_music_test.go` holds property
+tests over 200 seeds (reproducibility, ranges, degenerate input, counterpoint passing its own checker).

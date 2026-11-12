@@ -38,7 +38,9 @@ func (c *ToFrameConvert) Reset() {
 	c.gen.Reset()
 }
 
-// ToFrame creates a converter from a Generator[float64] to a FrameGenerator
+// ToFrame creates a converter from a Generator[float64] to a FrameGenerator. The frame it generates is
+// a slice that is reused by the next call to Generate: copy it if you keep it longer. (The same holds
+// for the other frame generators of this library.)
 func ToFrame(gen genny.Generator[float64]) *ToFrameConvert {
 	return &ToFrameConvert{gen: gen}
 }

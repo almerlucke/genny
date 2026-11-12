@@ -17,7 +17,7 @@ type Ramp struct {
 	continuous bool
 }
 
-// New creates a new ramp
+// New creates a new ramp. With fewer than 2 steps the ramp gives its start value once and is done
 func New(steps int, min float64, max float64, exp float64) *Ramp {
 	return newRamp(steps, min, max, exp, false)
 }

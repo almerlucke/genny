@@ -10,6 +10,20 @@ import (
 // supersample is the factor the drawing is rendered larger by and averaged down, for smooth edges
 const supersample = 2
 
+// drawer is what the plotters draw on: the raster canvas for PNG files and the svg writer for SVG
+// files. Coordinates are in supersampled pixels, the same numbers for both
+type drawer interface {
+	fillRect(r image.Rectangle, col color.Color)
+	fillPoly(pts []pt, col color.Color)
+	disc(cx, cy, r float64, col color.Color)
+	segment(a, b pt, width float64, col color.Color)
+	polyline(pts []pt, width float64, col color.Color)
+	// text draws a string with its top-left corner at (x, y), see canvas.text
+	text(s string, x, y, u int, col color.Color, rotated bool)
+	getClip() image.Rectangle
+	setClip(r image.Rectangle)
+}
+
 // canvas is an RGBA image with a clip rectangle and a few drawing primitives
 type canvas struct {
 	img  *image.RGBA
@@ -45,6 +59,9 @@ func (c *canvas) blend(x, y int, col color.Color) {
 		255,
 	})
 }
+
+func (c *canvas) getClip() image.Rectangle  { return c.clip }
+func (c *canvas) setClip(r image.Rectangle) { c.clip = r }
 
 func (c *canvas) fillRect(r image.Rectangle, col color.Color) {
 	r = r.Intersect(c.clip)

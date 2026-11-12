@@ -58,8 +58,8 @@ func TestErrors(t *testing.T) {
 		t.Error("a polygon needs three points")
 	}
 	p := plot.New()
-	if err := p.Save(plot.Inch, plot.Inch, filepath.Join(t.TempDir(), "x.svg")); err == nil {
-		t.Error("only png is supported")
+	if err := p.Save(plot.Inch, plot.Inch, filepath.Join(t.TempDir(), "x.jpg")); err == nil {
+		t.Error("only png and svg are supported")
 	}
 	// an empty plot still renders
 	if err := p.Save(plot.Inch, plot.Inch, filepath.Join(t.TempDir(), "x.png")); err != nil {

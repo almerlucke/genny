@@ -160,32 +160,128 @@ func TestScaleOption(t *testing.T) {
 	}
 }
 
+func TestCheckSecondTable(t *testing.T) {
+	cf := []int{62, 65, 64, 62}
+	flat := []int{60, 60, 60}
+	tests := []struct {
+		name string
+		cf   []int
+		cp   []int
+		want []string // the rules that must appear; nil means the line must be correct
+	}{
+		{"valid with a passing tone", cf, []int{69, 71, 69, 70, 71, 76, 74}, nil},
+		{"valid", cf, []int{69, 71, 69, 72, 71, 76, 74}, nil},
+		{"valid with neighbour tones", flat, []int{72, 74, 72, 71, 72}, nil},
+		{"wrong length", cf, []int{69, 71, 69}, []string{RuleLength}},
+		{"dissonance on the beat", cf, []int{69, 71, 70, 72, 71, 76, 74}, []string{RuleConsonance}},
+		{"weak dissonance reached by leap", cf, []int{69, 72, 69, 72, 71, 76, 74}, []string{RulePassing}},
+		{"weak dissonance left by leap", flat, []int{72, 74, 69, 71, 72}, []string{RulePassing}},
+		{"weak dissonance a repeated note", flat, []int{72, 74, 74, 71, 72}, []string{RulePassing}},
+		{"first note not perfect", cf, []int{66, 71, 69, 72, 71, 76, 74}, []string{RuleFirst}},
+		{"last note not octave", cf, []int{69, 71, 69, 72, 71, 76, 71}, []string{RuleLast}},
+		{"last note not reached by step", cf, []int{69, 71, 69, 72, 71, 64, 74}, []string{RulePenultimate}},
+		{"unison in the middle", cf, []int{69, 62, 62, 72, 71, 76, 74}, []string{RuleUnison}},
+		{"leap too big", cf, []int{69, 80, 69, 72, 71, 76, 74}, []string{RuleLeap}},
+		{"crossing the cantus", cf, []int{69, 60, 69, 72, 71, 76, 74}, []string{RuleSide}},
+		{"three times the same note", flat, []int{72, 72, 72, 71, 72}, []string{RuleRepeat}},
+	}
+	for _, tt := range tests {
+		got := rules(CheckSecond(tt.cf, tt.cp))
+		if tt.want == nil {
+			if len(got) != 0 {
+				t.Errorf("%s: unexpected %v", tt.name, got)
+			}
+			continue
+		}
+		for _, w := range tt.want {
+			if !slices.Contains(got, w) {
+				t.Errorf("%s: want rule %q, got %v", tt.name, w, got)
+			}
+		}
+	}
+}
+
+func TestCheckSecondParallels(t *testing.T) {
+	// beats: fifth (67 over 60), fifth (69 over 62) in similar motion: parallel fifths
+	cf := []int{60, 62, 60}
+	if got := rules(CheckSecond(cf, []int{67, 65, 69, 71, 72})); !slices.Contains(got, RuleParallel) {
+		t.Errorf("parallel fifths: %v", got)
+	}
+	// a fifth followed by a fifth in contrary motion is also refused in second species
+	if got := rules(CheckSecond([]int{62, 60, 62}, []int{69, 67, 67, 71, 74})); !slices.Contains(got, RuleParallel) {
+		t.Errorf("fifths on successive beats: %v", got)
+	}
+	// direct octave: the cantus and the line both rise into the octave
+	if got := rules(CheckSecond([]int{60, 62, 60}, []int{64, 67, 74, 73, 72})); !slices.Contains(got, RuleDirect) {
+		t.Errorf("direct octave: %v", got)
+	}
+}
+
 func TestSecondSpecies(t *testing.T) {
+	key := scale.New(62, scale.Dorian)
+	cantus := [][]int{
+		dorian,
+		{62, 65, 64, 62},
+		{62, 67, 65, 64, 62},
+		{57, 60, 59, 57, 55, 57},
+		{60, 62, 64, 65, 67, 65, 64, 62, 60},
+	}
+	for ci, cf := range cantus {
+		for _, side := range []Side{Above, Below} {
+			for seed := uint64(1); seed <= 60; seed++ {
+				genny.Seed(seed)
+				cfg := Config{Side: side, Scale: key}
+				if ci == 4 {
+					cfg.Scale = scale.New(60, scale.Major)
+				}
+				cp, err := GenerateSecond(cf, cfg)
+				if err != nil {
+					t.Errorf("cantus %d side %d seed %d: %v", ci, side, seed, err)
+					continue
+				}
+				if len(cp) != 2*len(cf)-1 {
+					t.Fatalf("seed %d: %d notes", seed, len(cp))
+				}
+				if vs := cfg.CheckSecond(cf, cp); len(vs) != 0 {
+					t.Errorf("cantus %d side %d seed %d: %v", ci, side, seed, vs)
+				}
+				if vs := CheckSecond(cf, cp); len(vs) != 0 {
+					t.Errorf("cantus %d side %d seed %d (inferred side): %v", ci, side, seed, vs)
+				}
+			}
+		}
+	}
+	// without a scale the pitch classes of the cantus are used
 	for seed := uint64(1); seed <= 20; seed++ {
 		genny.Seed(seed)
 		cp, err := GenerateSecond(dorian, Config{})
-		if err != nil {
-			t.Errorf("seed %d: %v", seed, err)
-			continue
-		}
-		if len(cp) != 2*len(dorian)-1 {
-			t.Fatalf("seed %d: %d notes", seed, len(cp))
-		}
-		if vs := CheckSecond(dorian, cp); len(vs) != 0 {
-			t.Errorf("seed %d: %v", seed, vs)
+		if err != nil || len(CheckSecond(dorian, cp)) != 0 {
+			t.Errorf("seed %d: %v %v", seed, err, CheckSecond(dorian, cp))
 		}
 	}
-	if got := rules(CheckSecond([]int{60, 62}, []int{64})); !slices.Contains(got, RuleLength) {
-		t.Error("length", got)
+}
+
+func TestSecondSpeciesSeededAndEdges(t *testing.T) {
+	genny.Seed(4)
+	a, _ := GenerateSecond(dorian, Config{})
+	genny.Seed(4)
+	b, _ := GenerateSecond(dorian, Config{})
+	if !slices.Equal(a, b) {
+		t.Error("same seed, other line")
 	}
-	// a passing dissonance on the weak beat is fine: C against 60: 72 (octave) 71 (7th) 69...
-	cf := []int{60, 60, 60}
-	if got := rules(CheckSecond(cf, []int{72, 71, 69, 71, 72})); slices.Contains(got, RulePassing) || slices.Contains(got, RuleConsonance) {
-		t.Errorf("passing tone: %v", got)
+	if cp, err := GenerateSecond(nil, Config{}); cp != nil || err != nil {
+		t.Error("empty cantus", cp, err)
 	}
-	// a leapt-to dissonance is not
-	if got := rules(CheckSecond(cf, []int{72, 74, 69, 71, 72})); !slices.Contains(got, RulePassing) {
-		t.Errorf("not a passing tone: %v", got)
+	cp, err := GenerateSecond([]int{60}, Config{})
+	if err != nil || len(cp) != 1 || mod12(cp[0]-60) != 0 {
+		t.Error("single note", cp, err)
+	}
+	// impossible: no solution, no panic
+	if _, err := GenerateSecond(dorian, Config{Low: 1, High: 2}); !errors.Is(err, ErrNoSolution) {
+		t.Error("impossible range", err)
+	}
+	if _, err := GenerateSecond(dorian, Config{Budget: 1}); err == nil {
+		t.Error("budget 1 should fail")
 	}
 }
 
@@ -196,5 +292,53 @@ func TestLineAndViolationString(t *testing.T) {
 	}
 	if (Violation{3, RuleLeap, "x"}).String() == "" {
 		t.Error("string")
+	}
+}
+
+func TestInvertible(t *testing.T) {
+	key := scale.New(62, scale.Dorian)
+	cf := []int{62, 65, 64, 62}
+	for species := 1; species <= 2; species++ {
+		for seed := uint64(1); seed <= 50; seed++ {
+			genny.Seed(seed)
+			cfg := Config{Scale: key, Invertible: true}
+			gen, check := Generate, cfg.Check
+			if species == 2 {
+				gen, check = GenerateSecond, cfg.CheckSecond
+			}
+			cp, err := gen(cf, cfg)
+			if err != nil {
+				t.Errorf("species %d seed %d: %v", species, seed, err)
+				continue
+			}
+			if vs := check(cf, cp); len(vs) != 0 {
+				t.Errorf("species %d seed %d: %v", species, seed, vs)
+			}
+			for j, p := range cp {
+				if mod12(p-cf[j/species]) == 7 {
+					t.Errorf("fifth in %v", cp)
+				}
+			}
+			// moved an octave down the line is below the cantus and still obeys the rules
+			down := make([]int, len(cp))
+			for i, p := range cp {
+				down[i] = p - 12
+			}
+			if vs := (Config{Side: Below, Scale: key}).Check(cf, down); species == 1 && len(vs) != 0 {
+				// only the climax and unison rules can differ for a line that touches the cantus
+				for _, v := range vs {
+					if v.Rule != RuleUnison && v.Rule != RuleSide {
+						t.Errorf("seed %d inverted: %v", seed, v)
+					}
+				}
+			}
+		}
+	}
+	// a fifth is flagged
+	if got := rules(Config{Invertible: true}.Check([]int{60, 62}, []int{67, 69})); !slices.Contains(got, RuleInvertible) {
+		t.Error(got)
+	}
+	if !Consonant(16) || Consonant(5) {
+		t.Error("Consonant")
 	}
 }

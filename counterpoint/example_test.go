@@ -5,6 +5,7 @@ import (
 
 	"github.com/almerlucke/genny"
 	"github.com/almerlucke/genny/counterpoint"
+	"github.com/almerlucke/genny/scale"
 )
 
 var cantus = []int{62, 65, 64, 67, 65, 69, 67, 65, 64, 62}
@@ -25,4 +26,14 @@ func ExampleCheck() {
 	// Output:
 	// note 1: parallel: parallel fifth
 	// note 2: parallel: parallel fifth
+}
+
+// Second species: two notes against each note of the cantus (the last note gets one). The result passes
+// CheckSecond: consonant on the beat, passing and neighbour tones off the beat, the last note by step
+func ExampleGenerateSecond() {
+	genny.Seed(3)
+	cf := []int{62, 65, 64, 62}
+	cp, err := counterpoint.GenerateSecond(cf, counterpoint.Config{Scale: scale.New(62, scale.Dorian)})
+	fmt.Println(err, len(cp), counterpoint.CheckSecond(cf, cp))
+	// Output: <nil> 7 []
 }

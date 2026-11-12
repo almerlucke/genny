@@ -13,12 +13,11 @@ import (
 	"github.com/almerlucke/genny/note"
 	"github.com/almerlucke/genny/phase"
 	"github.com/almerlucke/genny/scale"
-	"gonum.org/v1/plot/vg"
 )
 
 // lineRoll draws tracks as a piano roll to a PNG file
 func lineRoll(dir, name string, tracks ...plot.Track) {
-	if err := plot.Roll(tracks, 24*vg.Centimeter, 10*vg.Centimeter, path(dir, name)); err != nil {
+	if err := plot.Roll(tracks, 24*plot.Centimeter, 10*plot.Centimeter, path(dir, name)); err != nil {
 		log.Fatalf("%s: %v", name, err)
 	}
 }

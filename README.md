@@ -126,7 +126,7 @@ above 1).
 | `shapers/wavefold`, `saturate`, `rectify`, `curve`, `smoothstep`, `deadzone`, `harmonics`, `polynomial` | Wavefolders (sine, triangle), tanh/atan/logistic/tube saturation, rectifiers, bend curves, S-curves, dead zone and expander, additive harmonics, polynomials (Legendre) |
 | `shapers/phasedist`, `window` | Casio CZ phase distortion (saw, square, pulse, resonant); window functions (Hann, Hamming, Blackman, Tukey, Gaussian, Kaiser, Welch) |
 | `shapers/bitcrush`, `hysteresis`, `onepole`, `samplehold`, `funnel` | Shapers with memory (bit and sample rate reduction, Schmitt trigger and backlash, one-pole filter, sample and hold) and snapping to a scale, a sieve or a set of values |
-| `float/export/plot` | Plots a generator to a PNG, and a piano roll of note events |
+| `float/export/plot` | A small plotting package of its own (standard library only): lines, scatter, polygons, grid, legend, piano roll, PNG output |
 
 ### Notes and output
 
@@ -152,18 +152,16 @@ go run ./examples/shapes -seed 3 -mid sh.mid       # a piece sculpted by shapers
 go run ./examples/counterpoint -seed 3 -mid cp.mid # counterpoint, canon, isorhythm, phasing
 go run ./examples/evolve -seed 3 -mid e.mid     # Game of Life, stochastic cloud, evolved melody, Bohlen-Pierce
 go run ./examples/learnstyle -seed 3 -mid l.mid  # reads a MIDI file, learns its style, plays new music in it
-(cd examples/plotmusic && go run . plots)              # PNG plots of the generators, to see that they behave
+go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
 ```
 
-## Modules
+## Dependencies
 
-The library itself has no dependencies. The plotting code (`float/export/plot`, `examples/plot`,
-`examples/plotmusic`) uses gonum and lives in modules of its own; a `go.work` file ties them together
-for local work.
+None: the library, the examples and the plotting package (`float/export/plot`, which has its own
+PNG renderer and bitmap font) use only the Go standard library.
 
 ## Tests
 
 ```sh
-go test ./...                                      # the library
-(cd float/export/plot && go test ./...)            # the plotting module
+go test ./...
 ```

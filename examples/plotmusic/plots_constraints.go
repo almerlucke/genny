@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/almerlucke/genny/float/export/plot"
 	"log"
 
 	"github.com/almerlucke/genny"
@@ -11,13 +12,10 @@ import (
 	"github.com/almerlucke/genny/function"
 	"github.com/almerlucke/genny/grammar"
 	"github.com/almerlucke/genny/scale"
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 )
 
 // consSave draws a plot to a PNG file
-func consSave(p *plot.Plot, dir, name string, w, h vg.Length) {
+func consSave(p *plot.Plot, dir, name string, w, h plot.Length) {
 	if err := p.Save(w, h, path(dir, name)); err != nil {
 		log.Fatalf("%s: %v", name, err)
 	}
@@ -28,18 +26,18 @@ func consPortrait(dir, name, title, xLabel, yLabel string, orbits ...[][2]float6
 	p := plot.New()
 	p.Title.Text, p.X.Label.Text, p.Y.Label.Text = title, xLabel, yLabel
 	for _, orbit := range orbits {
-		pts := make(plotter.XYs, len(orbit))
+		pts := make(plot.XYs, len(orbit))
 		for i, v := range orbit {
-			pts[i] = plotter.XY{X: v[0], Y: v[1]}
+			pts[i] = plot.XY{X: v[0], Y: v[1]}
 		}
-		s, err := plotter.NewScatter(pts)
+		s, err := plot.NewScatter(pts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.GlyphStyle.Radius = vg.Points(0.7)
+		s.GlyphStyle.Radius = plot.Points(0.7)
 		p.Add(s)
 	}
-	consSave(p, dir, name, 12*vg.Centimeter, 12*vg.Centimeter)
+	consSave(p, dir, name, 12*plot.Centimeter, 12*plot.Centimeter)
 }
 
 // consOrbit runs an iterator and collects its first two values after a number of steps to settle
@@ -60,13 +58,13 @@ func consStems(dir, name, title, xLabel, yLabel string, xs, ys []float64) {
 	p := plot.New()
 	p.Title.Text, p.X.Label.Text, p.Y.Label.Text = title, xLabel, yLabel
 	for i := range xs {
-		l, err := plotter.NewLine(plotter.XYs{{X: xs[i], Y: 0}, {X: xs[i], Y: ys[i]}})
+		l, err := plot.NewLine(plot.XYs{{X: xs[i], Y: 0}, {X: xs[i], Y: ys[i]}})
 		if err != nil {
 			log.Fatal(err)
 		}
 		p.Add(l)
 	}
-	consSave(p, dir, name, 20*vg.Centimeter, 8*vg.Centimeter)
+	consSave(p, dir, name, 20*plot.Centimeter, 8*plot.Centimeter)
 }
 
 // plotsConstraints writes the plots of the constraints, the grammar, the chaotic modulators and the

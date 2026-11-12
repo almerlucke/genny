@@ -7,7 +7,6 @@ import (
 
 	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/note"
-	"gonum.org/v1/plot/vg"
 )
 
 func TestRollWritesAPNG(t *testing.T) {
@@ -29,7 +28,7 @@ func TestRollWritesAPNG(t *testing.T) {
 	}
 	for _, tt := range tests {
 		file := filepath.Join(t.TempDir(), "roll.png")
-		if err := plot.Roll(tt.tracks, 12*vg.Centimeter, 6*vg.Centimeter, file); err != nil {
+		if err := plot.Roll(tt.tracks, 12*plot.Centimeter, 6*plot.Centimeter, file); err != nil {
 			t.Fatalf("%s: %v", tt.name, err)
 		}
 		data, err := os.ReadFile(file)
@@ -40,7 +39,7 @@ func TestRollWritesAPNG(t *testing.T) {
 			t.Errorf("%s: not a png (%d bytes)", tt.name, len(data))
 		}
 	}
-	if err := plot.Roll(nil, vg.Inch, vg.Inch, ""); err == nil {
+	if err := plot.Roll(nil, plot.Inch, plot.Inch, ""); err == nil {
 		t.Error("an empty path should be an error")
 	}
 }

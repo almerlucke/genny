@@ -6,10 +6,6 @@ import (
 	"math"
 
 	"github.com/almerlucke/genny/note"
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/plotutil"
-	"gonum.org/v1/plot/vg"
 )
 
 // Track is a named line of notes for Roll
@@ -23,14 +19,14 @@ var noteNames = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "
 // noteTicks puts a label on every C and a minor tick on the other pitches
 type noteTicks struct{}
 
-func (noteTicks) Ticks(min, max float64) []plot.Tick {
-	var ticks []plot.Tick
+func (noteTicks) Ticks(min, max float64) []Tick {
+	var ticks []Tick
 	for p := int(math.Ceil(min)); p <= int(math.Floor(max)); p++ {
 		pc := ((p % 12) + 12) % 12
 		if pc == 0 {
-			ticks = append(ticks, plot.Tick{Value: float64(p), Label: fmt.Sprintf("C%d", p/12-1)})
+			ticks = append(ticks, Tick{Value: float64(p), Label: fmt.Sprintf("C%d", p/12-1)})
 		} else if max-min < 40 {
-			ticks = append(ticks, plot.Tick{Value: float64(p)})
+			ticks = append(ticks, Tick{Value: float64(p)})
 		}
 	}
 	return ticks
@@ -41,11 +37,11 @@ func (noteTicks) Ticks(min, max float64) []plot.Tick {
 // legend. Tracks without notes are drawn as an empty
 // entry in the legend, and no tracks at all give an empty roll. It returns an error if the file cannot
 // be written
-func Roll(tracks []Track, width, height vg.Length, path string) error {
+func Roll(tracks []Track, width, height Length, path string) error {
 	if path == "" {
 		return errors.New("plot: Roll needs a path")
 	}
-	p := plot.New()
+	p := New()
 	p.X.Label.Text = "step"
 	p.Y.Label.Text = "pitch"
 	p.Y.Tick.Marker = noteTicks{}
@@ -54,22 +50,22 @@ func Roll(tracks []Track, width, height vg.Length, path string) error {
 	xmax := 1.0
 	ymin, ymax := math.Inf(1), math.Inf(-1)
 	for i, tr := range tracks {
-		var polys []plotter.XYer
+		var polys []XYer
 		for _, e := range tr.Events {
 			if e.Duration <= 0 {
 				continue
 			}
-			polys = append(polys, plotter.XYs{
+			polys = append(polys, XYs{
 				{X: e.Start, Y: e.Pitch - 0.4}, {X: e.Start + e.Duration, Y: e.Pitch - 0.4},
 				{X: e.Start + e.Duration, Y: e.Pitch + 0.4}, {X: e.Start, Y: e.Pitch + 0.4},
 			})
 			xmax = max(xmax, e.Start+e.Duration)
 			ymin, ymax = min(ymin, e.Pitch), max(ymax, e.Pitch)
 		}
-		col := plotutil.Color(i)
+		col := Color(i)
 		if len(polys) == 0 {
 			// still a legend entry
-			dummy, err := plotter.NewLine(plotter.XYs{{X: 0, Y: 0}})
+			dummy, err := NewLine(XYs{{X: 0, Y: 0}})
 			if err != nil {
 				return err
 			}
@@ -77,13 +73,13 @@ func Roll(tracks []Track, width, height vg.Length, path string) error {
 			p.Legend.Add(tr.Name, dummy)
 			continue
 		}
-		poly, err := plotter.NewPolygon(polys...)
+		poly, err := NewPolygon(polys...)
 		if err != nil {
 			return err
 		}
 		poly.Color = col
 		poly.LineStyle.Color = col
-		poly.LineStyle.Width = vg.Points(0.3)
+		poly.LineStyle.Width = Points(0.3)
 		p.Add(poly)
 		p.Legend.Add(tr.Name, poly)
 	}

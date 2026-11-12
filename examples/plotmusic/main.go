@@ -194,6 +194,8 @@ func main() {
 	plotsMidi(dir)
 	plotsLine(dir)
 	plotsStochastic(dir)
+	plotsShapersA(dir)
+	plotsShapersB(dir)
 
 	fmt.Println("plots written to", dir)
 }

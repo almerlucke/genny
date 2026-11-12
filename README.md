@@ -123,6 +123,9 @@ above 1).
 | `float/envelopes/adsr` | ADSR envelopes |
 | `float/interp` | Reads a frame generator at another speed, with interpolation |
 | `float/shape` + `shapers/...` | Waveshaping: lookup tables, clipping, mirroring, quantizing, Chebyshev and others |
+| `shapers/wavefold`, `saturate`, `rectify`, `curve`, `smoothstep`, `deadzone`, `harmonics`, `polynomial` | Wavefolders (sine, triangle), tanh/atan/logistic/tube saturation, rectifiers, bend curves, S-curves, dead zone and expander, additive harmonics, polynomials (Legendre) |
+| `shapers/phasedist`, `window` | Casio CZ phase distortion (saw, square, pulse, resonant); window functions (Hann, Hamming, Blackman, Tukey, Gaussian, Kaiser, Welch) |
+| `shapers/bitcrush`, `hysteresis`, `onepole`, `samplehold`, `funnel` | Shapers with memory (bit and sample rate reduction, Schmitt trigger and backlash, one-pole filter, sample and hold) and snapping to a scale, a sieve or a set of values |
 | `float/export/plot` | Plots a generator to a PNG, and a piano roll of note events |
 
 ### Notes and output

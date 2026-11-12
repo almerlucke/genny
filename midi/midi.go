@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/bits"
 	"os"
 	"slices"
 
@@ -30,6 +31,35 @@ type Track struct {
 	// usual bend range of 2 semitones. Without it pitches are rounded to the nearest semitone. Only
 	// for single note lines: a pitch bend moves all sounding notes of the channel
 	PitchBend bool
+	// Controllers are control changes (volume 7, pan 10, modulation 1, ...) at a step of the track
+	Controllers []Controller
+	// ProgramChanges switch the instrument in the middle of the track, after the starting Program
+	ProgramChanges []ProgramChange
+}
+
+// Controller is a control change on the channel of a track. Number and Value are in 0..127
+type Controller struct {
+	Step          float64
+	Number, Value int
+}
+
+// ProgramChange switches the instrument of a track at a step. Program is in 0..127
+type ProgramChange struct {
+	Step    float64
+	Program int
+}
+
+// TempoChange sets a new tempo in beats per minute from a step on
+type TempoChange struct {
+	Step float64
+	BPM  float64
+}
+
+// TimeSignature is a meter from a step on: Num beats of a Den note, so 6/8 is {Num: 6, Den: 8}. Den is a
+// power of two up to 128. It is only information for the player, it does not change the timing
+type TimeSignature struct {
+	Step     float64
+	Num, Den int
 }
 
 // File is a MIDI file of one or more tracks
@@ -39,12 +69,25 @@ type File struct {
 	// StepsPerBeat is how many steps of the events fit in a beat (default 4, sixteenth notes)
 	StepsPerBeat float64
 	Tracks       []Track
+	// TempoChanges is the tempo map: new tempi after the initial Tempo
+	TempoChanges []TempoChange
+	// TimeSignatures are the meters of the file (default none, players assume 4/4)
+	TimeSignatures []TimeSignature
 }
 
 type message struct {
 	tick  int
 	order int // at the same tick: note off, then pitch bend, then note on
 	data  []byte
+}
+
+// okStep tells if a step can be turned into a tick
+func okStep(s float64) bool { return s >= 0 && s < 1e9 }
+
+// tempoMeta is the tempo meta event (without delta time) of a tempo in beats per minute
+func tempoMeta(bpm float64) []byte {
+	us := min(int(math.Round(60e6/bpm)), 0xffffff)
+	return meta(0, 0x51, []byte{byte(us >> 16), byte(us >> 8), byte(us)})[1:]
 }
 
 func vlq(n int) []byte {
@@ -97,10 +140,6 @@ func (t Track) body(tick func(float64) int) ([]byte, error) {
 			message{off, 0, []byte{0x80 | ch, byte(pitch), 0}},
 		)
 	}
-	slices.SortStableFunc(msgs, func(a, b message) int {
-		return cmp.Or(cmp.Compare(a.tick, b.tick), cmp.Compare(a.order, b.order))
-	})
-
 	var out []byte
 	if t.Name != "" {
 		out = append(out, meta(0, 0x03, []byte(t.Name))...)
@@ -108,6 +147,22 @@ func (t Track) body(tick func(float64) int) ([]byte, error) {
 	if t.Channel != 9 {
 		out = append(out, 0, 0xc0|ch, byte(t.Program))
 	}
+	for _, c := range t.Controllers {
+		if !okStep(c.Step) || c.Number < 0 || c.Number > 127 || c.Value < 0 || c.Value > 127 {
+			return nil, fmt.Errorf("midi: invalid controller %+v", c)
+		}
+		msgs = append(msgs, message{tick(c.Step), 1, []byte{0xb0 | ch, byte(c.Number), byte(c.Value)}})
+	}
+	for _, c := range t.ProgramChanges {
+		if !okStep(c.Step) || c.Program < 0 || c.Program > 127 {
+			return nil, fmt.Errorf("midi: invalid program change %+v", c)
+		}
+		msgs = append(msgs, message{tick(c.Step), 1, []byte{0xc0 | ch, byte(c.Program)}})
+	}
+	slices.SortStableFunc(msgs, func(a, b message) int {
+		return cmp.Or(cmp.Compare(a.tick, b.tick), cmp.Compare(a.order, b.order))
+	})
+
 	last := 0
 	for _, m := range msgs {
 		out = append(out, vlq(m.tick-last)...)
@@ -131,8 +186,30 @@ func Write(w io.Writer, f File) error {
 	}
 	tick := func(steps float64) int { return int(math.Round(steps / spb * ticksPerBeat)) }
 
-	us := int(math.Round(60e6 / tempo))
-	tempoTrack := meta(0, 0x51, []byte{byte(us >> 16), byte(us >> 8), byte(us)})
+	tempoMsgs := []message{{0, 0, tempoMeta(tempo)}}
+	for _, c := range f.TempoChanges {
+		if !okStep(c.Step) || !(c.BPM > 0) || c.BPM > 1e6 {
+			return fmt.Errorf("midi: invalid tempo change %+v", c)
+		}
+		tempoMsgs = append(tempoMsgs, message{tick(c.Step), 1, tempoMeta(c.BPM)})
+	}
+	for _, s := range f.TimeSignatures {
+		dd := bits.TrailingZeros(uint(max(s.Den, 0)))
+		if !okStep(s.Step) || s.Num < 1 || s.Num > 255 || s.Den < 1 || s.Den > 128 || s.Den != 1<<dd {
+			return fmt.Errorf("midi: invalid time signature %+v", s)
+		}
+		tempoMsgs = append(tempoMsgs, message{tick(s.Step), 2, meta(0, 0x58, []byte{byte(s.Num), byte(dd), 24, 8})[1:]})
+	}
+	slices.SortStableFunc(tempoMsgs, func(a, b message) int {
+		return cmp.Or(cmp.Compare(a.tick, b.tick), cmp.Compare(a.order, b.order))
+	})
+	var tempoTrack []byte
+	last := 0
+	for _, m := range tempoMsgs {
+		tempoTrack = append(tempoTrack, vlq(m.tick-last)...)
+		tempoTrack = append(tempoTrack, m.data...)
+		last = m.tick
+	}
 	tempoTrack = append(tempoTrack, meta(0, 0x2f, nil)...)
 
 	var buf bytes.Buffer

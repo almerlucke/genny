@@ -191,6 +191,7 @@ func main() {
 	plotsTendency(dir)
 	plotsRhythm(dir)
 	plotsConstraints(dir)
+	plotsMidi(dir)
 
 	fmt.Println("plots written to", dir)
 }

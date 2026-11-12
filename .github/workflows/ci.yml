@@ -19,3 +19,9 @@ jobs:
         run: go vet ./...
       - name: test
         run: go test ./...
+      # the plotting code has its own modules, so that the library itself has no dependencies
+      - name: plot modules
+        run: |
+          for d in float/export/plot examples/plot examples/plotmusic; do
+            (cd $d && GOWORK=off go vet ./... && GOWORK=off go test ./...)
+          done

@@ -148,6 +148,7 @@ go run ./examples/rhythmtools -seed 3 -mid r.mid # sieves, pulse hierarchy, spli
 go run ./examples/constraints -seed 3 -mid c.mid # grammar, constrained walks, spectral chords
 go run ./examples/suite -seed 3 -mid s.mid       # all of them in one piece of 32 bars
 go run ./examples/rexregum -seed 7 -mid r.mid    # Rex Regum: a piece on biblical numbers (3, 7, 12, 153)
+go run ./examples/shapes -seed 3 -mid sh.mid       # a piece sculpted by shapers (wavefold, funnel, bitcrush, ...)
 go run ./examples/counterpoint -seed 3 -mid cp.mid # counterpoint, canon, isorhythm, phasing
 go run ./examples/evolve -seed 3 -mid e.mid     # Game of Life, stochastic cloud, evolved melody, Bohlen-Pierce
 go run ./examples/learnstyle -seed 3 -mid l.mid  # reads a MIDI file, learns its style, plays new music in it

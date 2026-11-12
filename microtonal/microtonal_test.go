@@ -283,3 +283,29 @@ func TestDeterministic(t *testing.T) {
 		t.Error("not deterministic")
 	}
 }
+
+func TestMPELeavesTheDrumChannelAlone(t *testing.T) {
+	var evs []note.Event
+	for i := 0; i < 14; i++ {
+		evs = append(evs, note.Event{Pitch: 60 + float64(i), Velocity: 0.7, Start: 0, Duration: 4})
+	}
+	has := func(tracks []midi.Track, ch int) bool {
+		for _, tr := range tracks {
+			if tr.Channel == ch && len(tr.Events) > 0 {
+				return true
+			}
+		}
+		return false
+	}
+	tracks, skipped := Plan(evs, nil, Strategy{MPE: true, Members: 14})
+	if has(tracks, 9) {
+		t.Error("channel 10 (index 9) must not carry notes by default")
+	}
+	if skipped != 1 {
+		t.Errorf("14 simultaneous notes on 13 usable channels: skipped %d, want 1", skipped)
+	}
+	tracks, skipped = Plan(evs, nil, Strategy{MPE: true, Members: 14, DrumChannel: true})
+	if !has(tracks, 9) || skipped != 0 {
+		t.Errorf("DrumChannel should use channel 10: has=%v skipped=%d", has(tracks, 9), skipped)
+	}
+}

@@ -1,0 +1,42 @@
+{
+  "tempo": 108,
+  "steps_per_beat": 4,
+  "seed": 7,
+  "time_signature": {"num": 4, "den": 4},
+  "tracks": [
+    {
+      "name": "lead", "channel": 0, "program": 80,
+      "source": {
+        "kind": "swing", "params": {"amount": 0.2, "humanize": 0.03, "item": {
+          "kind": "concat", "params": {"items": [
+            {"kind": "repeat", "params": {"n": 2, "item": {
+              "kind": "melody",
+              "params": {"scale": "minor", "root": "D4", "length": 32, "step": 2, "note_length": 1.5, "start": 0, "low": -3, "high": 7, "rest_prob": 0.2, "velocity": 0.85}
+            }}},
+            {"kind": "transpose", "params": {"semitones": 7, "item": {
+              "kind": "melody",
+              "params": {"scale": "minor", "root": "D4", "length": 64, "step": 2, "note_length": 1.5, "low": -3, "high": 7, "rest_prob": 0.15}
+            }}}
+          ]}
+        }}
+      }
+    },
+    {
+      "name": "bass", "channel": 1, "program": 33,
+      "source": {
+        "kind": "progression",
+        "params": {"scale": "minor", "root": "D2", "bars": 8, "bar_steps": 16, "degrees": [1, 6, 4, 5], "style": "arpeggio", "step": 2, "velocity": 0.8}
+      }
+    },
+    {
+      "name": "drums", "channel": 9, "program": 0,
+      "source": {
+        "kind": "layer", "params": {"items": [
+          {"kind": "euclid", "params": {"steps": 16, "pulses": 4, "pitch": 36, "length": 128, "velocity": 0.95}},
+          {"kind": "euclid", "params": {"steps": 8, "pulses": 3, "rotation": 2, "pitch": 38, "length": 128}},
+          {"kind": "euclid", "params": {"steps": 16, "pulses": 11, "pitch": 42, "length": 128, "velocity": 0.55, "note_length": 0.5}}
+        ]}
+      }
+    }
+  ]
+}

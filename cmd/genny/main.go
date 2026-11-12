@@ -3,6 +3,7 @@
 //	genny render spec.json -o out.mid [-seed N]
 //	genny validate spec.json [-seed N]
 //	genny list [kind]
+//	genny doc
 //
 // See README.md in this directory for the format of a spec.
 package main
@@ -24,6 +25,7 @@ const usage = `usage:
   genny render spec.json [-o out.mid] [-seed N]   render a spec to a MIDI file
   genny validate spec.json [-seed N]              check a spec without writing anything
   genny list [kind]                               list the kinds of nodes and their parameters
+  genny doc                                       print the reference of the spec format as Markdown
 
 spec.json may be - to read standard input.
 `
@@ -42,6 +44,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return render(args[1:], stdin, stdout, stderr, false)
 	case "list":
 		return list(args[1:], stdout, stderr)
+	case "doc":
+		fmt.Fprint(stdout, spec.Reference())
+		return 0
 	case "help", "-h", "-help", "--help":
 		fmt.Fprint(stdout, usage)
 		return 0

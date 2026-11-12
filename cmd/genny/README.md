@@ -25,7 +25,8 @@ tendency, choose, cloud, progression, chordmelody, notes) make a line of notes. 
 layer/merge, repeat, transpose, invert, retrograde, stretch, shift, slice, quantize, canon, swing, humanize,
 gain, thin) take child nodes in `item` or `items`. Time is in steps; pitches are numbers or names (`C4` is
 60); scales are names or arrays of semitone steps. `genny list` prints every kind with its parameters and
-defaults.
+defaults; the full reference is in [docs/spec-reference.md](../../docs/spec-reference.md) (regenerate it
+with `genny doc`).
 
     {"kind": "concat", "params": {"items": [
       {"kind": "melody", "params": {"scale": "minor", "root": "D3", "length": 32}},

@@ -136,7 +136,7 @@ above 1).
 
 | Package | What it does |
 |---|---|
-| `spec` | Renders a piece described in JSON (generators and combinators from one table of kinds) to MIDI; used by `cmd/genny` |
+| `spec` | Renders a piece described in JSON (generators and combinators from one table of kinds) to MIDI; used by `cmd/genny`, reference in `docs/spec-reference.md` |
 | `note` | A `Voice` turns generators (pitch with rests, velocity, length, timing offset, ratchets) into note events |
 | `midi` | Reads and writes Standard MIDI Files: tempo and meter changes, controllers, program changes, pitch bend for microtonal pitches |
 | `ngram/style` | Learns pitches and durations from imported events (as intervals and ratios, so it transposes) and plays new music in that style |

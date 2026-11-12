@@ -104,7 +104,7 @@ func main() {
 		progress := ft / total
 
 		// lead: two oscillators -> polynomial -> wavefolder (more folding as the piece goes on) -> scale
-		raw := 0.7*osc(ft, 64, 0) + 0.3*osc(ft, 40, 0.1)
+		raw := 0.55*osc(ft, 64, 0) + 0.25*osc(ft, 40, 0.1) + 0.2*osc(ft, 13, 0.3) // the fast third oscillator keeps the fold from flattening on an extreme
 		shaped := wavefold.NewSine(1 + 2.5*progress).Shape(poly.Shape(raw))
 		pitch := lead.Shape(62 + 14*shaped)
 

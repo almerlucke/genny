@@ -12,7 +12,6 @@ import (
 	"github.com/almerlucke/genny/flatten"
 	"github.com/almerlucke/genny/float"
 	"github.com/almerlucke/genny/float/envelopes/adsr"
-	"github.com/almerlucke/genny/float/export/plot"
 	"github.com/almerlucke/genny/float/interp"
 	"github.com/almerlucke/genny/float/iter"
 	"github.com/almerlucke/genny/float/iter/updaters/chaos"
@@ -28,8 +27,8 @@ import (
 	"github.com/almerlucke/genny/transform"
 	"github.com/almerlucke/genny/unwrap"
 	"github.com/almerlucke/genny/walk"
-	"gonum.org/v1/plot/vg"
 	"log"
+	"math"
 	"math/rand"
 	"testing"
 )
@@ -38,6 +37,18 @@ type StringCaster struct{}
 
 func (sc *StringCaster) Convert(f float64) string {
 	return fmt.Sprintf("test cast: %f", f)
+}
+
+// sampleFrames generates n frames and checks that they are finite
+func sampleFrames(t *testing.T, g genny.Generator[[]float64], n int) {
+	t.Helper()
+	for i := 0; i < n; i++ {
+		for _, v := range g.Generate() {
+			if math.IsNaN(v) || math.IsInf(v, 0) {
+				t.Fatalf("frame %d is not finite: %v", i, v)
+			}
+		}
+	}
 }
 
 func TestGens(t *testing.T) {
@@ -149,12 +160,7 @@ func TestGens(t *testing.T) {
 		log.Printf("interpolator: %f", ipol.Generate()[0])
 	}
 
-	err := plot.Plot(
-		float.ToFrame(phasor.New(1000.0, 44100.0, 0.0)),
-		100,
-		vg.Centimeter*10, vg.Centimeter*5,
-		"points.png",
-	)
+	sampleFrames(t, float.ToFrame(phasor.New(1000.0, 44100.0, 0.0)), 100)
 
 	adsrSetting := adsr.NewSetting(1.0, 10, 0.4, 10, 10.0, 10.0)
 	adsrSetting.DecayShape = -0.5
@@ -163,15 +169,7 @@ func TestGens(t *testing.T) {
 	adsrEnv := adsr.New(adsrSetting, adsr.Automatic, 4000.0)
 	adsrEnv.Trigger(1.0)
 
-	err = plot.Plot(
-		float.ToFrame(adsrEnv),
-		400,
-		vg.Centimeter*10, vg.Centimeter*5,
-		"env.png",
-	)
-	if err != nil {
-		t.Errorf("plot error: %v", err)
-	}
+	sampleFrames(t, float.ToFrame(adsrEnv), 400)
 
 	l := line.New(10.0)
 	l.To(24, 12)
@@ -184,24 +182,8 @@ func TestGens(t *testing.T) {
 	}
 
 	rw := rwalk.New(0.5, 0.0, 1.0, 0.1, rwalk.Bounce)
-	err = plot.Plot(
-		float.ToFrame(rw),
-		400,
-		vg.Centimeter*10, vg.Centimeter*5,
-		"rwalk.png",
-	)
-	if err != nil {
-		t.Errorf("plot error: %v", err)
-	}
+	sampleFrames(t, float.ToFrame(rw), 400)
 
 	ip := interp.New(float.ToFrame(function.NewRandom(0.0, 1.0)), interp.Linear, 0.001)
-	err = plot.Plot(
-		ip,
-		40000,
-		vg.Centimeter*10, vg.Centimeter*5,
-		"interp.png",
-	)
-	if err != nil {
-		t.Errorf("plot error: %v", err)
-	}
+	sampleFrames(t, ip, 40000)
 }

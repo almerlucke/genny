@@ -148,11 +148,18 @@ go run ./examples/rexregum -seed 7 -mid r.mid    # Rex Regum: a piece on biblica
 go run ./examples/counterpoint -seed 3 -mid cp.mid # counterpoint, canon, isorhythm, phasing
 go run ./examples/evolve -seed 3 -mid e.mid     # Game of Life, stochastic cloud, evolved melody, Bohlen-Pierce
 go run ./examples/learnstyle -seed 3 -mid l.mid  # reads a MIDI file, learns its style, plays new music in it
-go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
+(cd examples/plotmusic && go run . plots)              # PNG plots of the generators, to see that they behave
 ```
+
+## Modules
+
+The library itself has no dependencies. The plotting code (`float/export/plot`, `examples/plot`,
+`examples/plotmusic`) uses gonum and lives in modules of its own; a `go.work` file ties them together
+for local work.
 
 ## Tests
 
 ```sh
-go test ./...
+go test ./...                                      # the library
+(cd float/export/plot && go test ./...)            # the plotting module
 ```

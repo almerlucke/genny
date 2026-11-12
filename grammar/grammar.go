@@ -224,4 +224,7 @@ func (p *Player[T]) Done() bool { return p.begun && len(p.cur) == 0 }
 // Reset forgets the expansion: the next Generate derives a new one
 func (p *Player[T]) Reset() { p.cur, p.pos, p.begun = nil, 0, false }
 
+// Compile-time check that *Player implements genny.Generator: if a method is removed or its signature
+// changes, the build fails here, next to the type, instead of where it is first used. It costs nothing
+// at run time (a nil pointer assigned to the blank identifier).
 var _ genny.Generator[int] = (*Player[int])(nil)

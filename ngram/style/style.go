@@ -231,4 +231,7 @@ func (s *Style) Fill(length float64) []Note {
 	return out
 }
 
+// Compile-time check that *Style implements genny.Generator: if a method is removed or its signature
+// changes, the build fails here, next to the type, instead of where it is first used. It costs nothing
+// at run time (a nil pointer assigned to the blank identifier).
 var _ genny.Generator[Note] = (*Style)(nil)

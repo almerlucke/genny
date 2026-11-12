@@ -192,6 +192,8 @@ func main() {
 	plotsRhythm(dir)
 	plotsConstraints(dir)
 	plotsMidi(dir)
+	plotsLine(dir)
+	plotsStochastic(dir)
 
 	fmt.Println("plots written to", dir)
 }

@@ -124,7 +124,8 @@ above 1).
 | Package | What it does |
 |---|---|
 | `note` | A `Voice` turns generators (pitch with rests, velocity, length, timing offset, ratchets) into note events |
-| `midi` | Writes note events to a Standard MIDI File, with optional pitch bend for microtonal pitches |
+| `midi` | Reads and writes Standard MIDI Files: tempo and meter changes, controllers, program changes, pitch bend for microtonal pitches |
+| `ngram/style` | Learns pitches and durations from imported events (as intervals and ratios, so it transposes) and plays new music in that style |
 
 ## Examples
 
@@ -138,6 +139,7 @@ go run ./examples/rhythmtools -seed 3 -mid r.mid # sieves, pulse hierarchy, spli
 go run ./examples/constraints -seed 3 -mid c.mid # grammar, constrained walks, spectral chords
 go run ./examples/suite -seed 3 -mid s.mid       # all of them in one piece of 32 bars
 go run ./examples/rexregum -seed 7 -mid r.mid    # Rex Regum: a piece on biblical numbers (3, 7, 12, 153)
+go run ./examples/learnstyle -seed 3 -mid l.mid  # reads a MIDI file, learns its style, plays new music in it
 go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
 ```
 

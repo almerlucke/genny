@@ -31,6 +31,9 @@ type Strategy struct {
 	Channel int
 	// Members is the number of MPE member channels 1..15 (default 15)
 	Members int
+	// DrumChannel lets MPE use channel 10 (index 9) for notes too. By default it is left out, because
+	// General MIDI synths play every note on channel 10 as a drum hit, which would ruin a pad note
+	DrumChannel bool
 	// Program is the instrument 0..127 of all tracks
 	Program int
 	// Name names the tracks
@@ -137,6 +140,9 @@ func Plan(events []note.Event, tuning *Tuning, s Strategy) (tracks []midi.Track,
 		if s.MPE {
 			ch = -1
 			for c := 1; c <= members; c++ {
+				if c == 9 && !s.DrumChannel {
+					continue
+				}
 				if freeAt[c] <= e.Start && (ch < 0 || freeAt[c] < freeAt[ch]) {
 					ch = c
 				}

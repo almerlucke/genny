@@ -76,14 +76,17 @@ above 1).
 | `groove` | `Swing`, `Humanize`, `Jitter` for timing, `Accent` for velocities by meter (7/8 as 2+2+3) |
 | `ratchet` | Repeats a step several times: a roll. Random or from a pattern |
 | `section` | Plays parts for N steps each: A for 4 bars, B for 8, and around |
-| `automaton` | One dimensional cellular automata (rule 30, 90, 110) as patterns and gates |
+| `automaton` | Cellular automata as patterns and gates: one dimensional (rule 30, 90, 110) and Game of Life (B/S rules) |
 
 ### Pitch and harmony
 
 | Package | What it does |
 |---|---|
-| `scale` | Scales (modes, pentatonic, blues, just intonation, n equal divisions), quantizing, `Walk` over degrees |
+| `scale` | Scales (modes, Messiaen's modes, pentatonic, blues, just intonation, n equal divisions, Scala `.scl` files), quantizing, `Walk` over degrees |
 | `chord` | Chords, inversions, diatonic chords from a scale, a `VoiceLeader` for smooth voice leading, spectral chords (harmonic, FM, ring modulation) |
+| `line` | Transformations of whole lines of note events: canon, inversion, retrograde, augmentation, loop, thin |
+| `counterpoint` | First species counterpoint against a cantus firmus, with a rule checker (second species experimental) |
+| `melody` | A melody over chords: chord tones on strong beats, scale tones between |
 | `progression` | Chord progressions as a Markov chain (pop, classical, jazz, blues), or your own table |
 | `row` | Tone rows: retrograde, inversion, transposition, the twelve tone matrix, permutations and all-interval rows |
 | `ngram` | Learns the style of an example melody and plays new music in it |
@@ -97,6 +100,9 @@ above 1).
 | `lsystem` | Lindenmayer systems: self-similar phrases from rewriting rules |
 | `numseq` | Fibonacci, Collatz, Thue-Morse and the primes |
 | `grammar` | Context-free rewrite grammars with weighted alternatives: phrases and bars that are derived again every cycle |
+| `stochastic` | Xenakis style: Poisson onsets, clouds with a changing density, free stochastic music |
+| `evolve` | A genetic algorithm for phrases: fitness for smoothness, contour, scale; a player that improves a phrase as it plays |
+| `isorhythm`, `phase` | Ars nova talea against color of different lengths; Reich style phasing of a pattern against itself |
 | `constrain` | Filters that redraw until a rule is met: allowed or blocked intervals, no repetitions, no duplicates in a group; constrained melodic walks |
 | `sieve` | Xenakis sieves: residue classes with union, intersection and complement, as pitch sets, gates and filters |
 | `split` | Recursive rhythm splitting: a duration divided into branches until a lower limit |
@@ -117,7 +123,7 @@ above 1).
 | `float/envelopes/adsr` | ADSR envelopes |
 | `float/interp` | Reads a frame generator at another speed, with interpolation |
 | `float/shape` + `shapers/...` | Waveshaping: lookup tables, clipping, mirroring, quantizing, Chebyshev and others |
-| `float/export/plot` | Plots a generator to a PNG |
+| `float/export/plot` | Plots a generator to a PNG, and a piano roll of note events |
 
 ### Notes and output
 
@@ -139,6 +145,8 @@ go run ./examples/rhythmtools -seed 3 -mid r.mid # sieves, pulse hierarchy, spli
 go run ./examples/constraints -seed 3 -mid c.mid # grammar, constrained walks, spectral chords
 go run ./examples/suite -seed 3 -mid s.mid       # all of them in one piece of 32 bars
 go run ./examples/rexregum -seed 7 -mid r.mid    # Rex Regum: a piece on biblical numbers (3, 7, 12, 153)
+go run ./examples/counterpoint -seed 3 -mid cp.mid # counterpoint, canon, isorhythm, phasing
+go run ./examples/evolve -seed 3 -mid e.mid     # Game of Life, stochastic cloud, evolved melody, Bohlen-Pierce
 go run ./examples/learnstyle -seed 3 -mid l.mid  # reads a MIDI file, learns its style, plays new music in it
 go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
 ```

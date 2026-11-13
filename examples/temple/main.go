@@ -23,8 +23,9 @@
 //
 //   - the porch is an isorhythm, a medieval form with a rhythm cycle (the talea) and a pitch cycle (the color) of
 //     different lengths. The talea is the capital's height, the lily work and the chains: 5 + 4 + 7 = 16 steps, one
-//     bar. The color is seven partials taken from the measures themselves: 4 (lily work), 5 (capital), 7 (chains),
-//     10 (depth), 12 and 18 (the pillar's circumference and height) and 20 (width). Jachin plays the color forward,
+//     bar. The color is seven measures: 4 (lily work), 5 (capital), 7 (chains), 10 (depth), 12 and 18 (the pillar's
+//     circumference and height) and 20 (width), each reduced to one of the four notes of the theme of the holy
+//     place (D E F# A: the measure modulo 4), in the octave its size asks. Jachin plays the color forward,
 //     Boaz answers backward, a step later and two octaves lower
 //
 //   - the holy place is a proportion canon. It is 40 long, 20 wide and 30 high, and three voices play the same theme
@@ -195,15 +196,23 @@ func main() {
 	// ---- the porch: an isorhythm. Talea 5 + 4 + 7 (capital, lily work, chains), color 4 5 7 10 12 18 20 (from the measures)
 	talea := []float64{5, 4, 7}
 	color := []float64{4, 5, 7, 10, 12, 18, 20}
+	notes := []float64{1, 9.0 / 8, 5.0 / 4, 3.0 / 2} // D E F# A, the notes of the theme of the holy place
+	pitch := func(m float64) float64 {               // a measure as a note: its place modulo 4, an octave higher for the larger measures
+		r := notes[int(m)%4] * 2
+		if m >= 10 {
+			r *= 2
+		}
+		return r
+	}
 	jachin, boaz := voices[3], voices[4]
 	for i, t := 0, porchStart; t < holyStart; i++ {
 		d := talea[i%3]
-		jachin.add(partial(color[i%7]/2), 0.3+0.35*(t-porchStart)/(porchBars*stepsPerBar), t, math.Min(d, holyStart-t)-0.2)
+		jachin.add(partial(pitch(color[i%7])), 0.3+0.35*(t-porchStart)/(porchBars*stepsPerBar), t, math.Min(d, holyStart-t)-0.2)
 		t += d
 	}
 	for i, t := 0, porchStart+stepsPerBar/2; t < holyStart; i++ { // the left pillar answers, backwards, half a bar later
 		d := talea[(i+1)%3]
-		boaz.add(partial(color[6-i%7]/4), 0.3+0.3*(t-porchStart)/(porchBars*stepsPerBar), t, math.Min(d, holyStart-t)-0.2)
+		boaz.add(partial(pitch(color[6-i%7])/2), 0.3+0.3*(t-porchStart)/(porchBars*stepsPerBar), t, math.Min(d, holyStart-t)-0.2)
 		t += d
 	}
 

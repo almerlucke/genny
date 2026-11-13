@@ -216,37 +216,47 @@ func main() {
 		t += d
 	}
 
-	// ---- the holy place: a proportion canon, durations times 4 (length), 3 (height) and 2 (width)
+	// ---- the holy place: a proportion canon, durations times 4 (length), 3 (height) and 2 (width). It has two halves of
+	// 20 cubits (10 bars): in the second half all durations are halved, the canon starts anew at twice the speed
 	theme := []float64{4, 4.5, 5, 6, 4.5, 5, 6, 8} // partials: D E F# A E F# A D
 	lengths := []float64{2, 1, 1, 2, 1, 1, 1, 1}   // 10 steps
-	for _, v := range []struct {
-		ch            int
-		scale, octave float64
-	}{{8, 4, 0.5}, {3, 3, 1}, {6, 2, 2}} {
-		for t := holyStart; t < holiestStart; {
-			for k, r := range theme {
-				d := lengths[k] * v.scale
-				if t >= holiestStart {
-					break
+	split := holyStart + float64(holyBars/2*stepsPerBar)
+	canon := func(from, to, speed float64) {
+		for _, v := range []struct {
+			ch            int
+			scale, octave float64
+		}{{8, 4, 0.5}, {3, 3, 1}, {6, 2, 2}} {
+			for t := from; t < to; {
+				for k, r := range theme {
+					d := lengths[k] * v.scale / speed
+					if t >= to {
+						break
+					}
+					vel := 0.4
+					if k == 0 {
+						vel = 0.55
+					}
+					voices[v.ch].add(partial(r*v.octave), vel, t, math.Min(d, to-t)-0.3)
+					t += d
 				}
-				vel := 0.4
-				if k == 0 {
-					vel = 0.55
-				}
-				voices[v.ch].add(partial(r*v.octave), vel, t, math.Min(d, holiestStart-t)-0.3)
-				t += d
 			}
 		}
 	}
-	// every 120 steps the three meet: the chord of the side chambers 5 : 6 : 7 over a pedal
-	for j, r := range []float64{1, 3.0 / 2, 1} {
-		t0 := holyStart + float64(j*120)
-		span := math.Min(120, holiestStart-t0)
+	canon(holyStart, split, 1)
+	canon(split, holiestStart, 2)
+	// whenever the three meet (every 120 steps, in the second half every 60): the chord of the side chambers 5 : 6 : 7 over a pedal
+	meet := func(t0, span, r float64) {
 		voices[4].add(partial(r), 0.5, t0, span-1)
 		for i, ch := range []int{10, 11, 13} {
 			voices[ch].add(partial(r*[]float64{2.5, 3, 3.5}[i]), 0.42, t0+float64(i)*3, math.Min(40, span)-float64(i)*3)
 		}
 	}
+	meet(holyStart, 120, 1)
+	meet(holyStart+120, split-holyStart-120, 3.0/2)
+	meet(split, 60, 4.0/3)
+	meet(split+60, 60, 3.0/2)
+	meet(split+120, holiestStart-split-120, 1)
+	voices[5].add(partial(16), 0.4, split, 12) // a bell where the second half begins
 
 	// ---- the most holy place: a cube, so a mirror in time and in pitch
 	cherubim := holiestStart

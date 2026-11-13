@@ -161,6 +161,7 @@ go run ./examples/fugue -seed 3 -mid f.mid       # a four-voice fugue in D minor
 go run ./examples/harmony -seed 3 -mid h.mid     # a chorale in four voices: G major to D major and back
 go run ./examples/polyrhythm -mid p.mid          # 3:2, 5:4 and 7:4 joined by metric modulations
 go run ./examples/microtonal -seed 3 -mid m.mid  # 31-EDO, harmonic series and Bohlen-Pierce (MPE bends)
+go run ./examples/temple -mid t.mid           # Solomon's temple: the measures of 1 Kings 6-8 as just intonation ratios, bars and rhythms
 go run ./cmd/genny render examples/spec/groove.json -o g.mid   # a piece described in JSON (see cmd/genny/README.md)
 go run ./examples/plotmusic plots              # PNG plots of the generators, to see that they behave
 go run ./examples/plotextras plots             # histogram, pitch classes and spectra as PNG and SVG

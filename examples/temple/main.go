@@ -41,6 +41,9 @@
 //     a few cents apart and come together into a pure unison exactly in the middle, then part again. The room is
 //     overlaid with gold: a high bell at each wing and a higher one in the middle
 //
+//   - the sea and the lavers of the court return in the most holy place: the 12 strokes of the sea go round forwards and
+//     then backwards, and the lavers climb and descend, the second ten bars being the first ten backwards
+//
 //   - the offerings of the court return, the same 22 strokes against 120 ticks (11 : 60) every 10 bars, under the second
 //     half of the holy place and through the most holy place, the strokes swelling to the middle of the cube and fading
 //     again, which keeps the cube from standing still
@@ -166,13 +169,17 @@ func main() {
 	sea := voices[0]
 	directions := []float64{1, 4.0 / 3, 3.0 / 2, 2} // unison, fourth, fifth and octave
 	oxen := []float64{2, 4, 12}                     // the sea is 5 : 10 : 30 = 1 : 2 : 6
-	for i := 0; i < 12; i++ {
+	ox := func(i int) (pitch, vel float64) {        // the pitch and the strength of the stroke of ox i
 		d, k := i/3, i%3
-		vel := 0.6
+		vel = 0.6
 		if k == 0 {
 			vel = 0.78
 		}
-		sea.add(partial(directions[d]*oxen[k]), vel, courtStart+float64(i*stepsPerBar), stepsPerBar-0.5)
+		return partial(directions[d] * oxen[k]), vel
+	}
+	for i := 0; i < 12; i++ {
+		pitch, vel := ox(i)
+		sea.add(pitch, vel, courtStart+float64(i*stepsPerBar), stepsPerBar-0.5)
 	}
 
 	left, right := 0, 0
@@ -294,6 +301,36 @@ func main() {
 		voices[5].add(partial(16), 0.4, cherubim+b*bar, 12)
 	}
 	voices[5].add(partial(32), 0.45, cherubim+10*bar-2, 14)
+	// the sea and the lavers of the court come back: the 12 strokes of the sea go round forwards and then backwards, 24 strokes
+	// in the 20 bars (a mirror in time as well), and the lavers climb and descend as in the court, the second ten bars
+	// being the first ten backwards
+	for j := 0; j < 24; j++ {
+		i := j
+		if j >= 12 {
+			i = 23 - j
+		}
+		pitch, vel := ox(i)
+		voices[0].add(pitch, vel*0.85, cherubim+(float64(j)+0.5)*holiestBar*stepsPerBar/24, holiestBar*stepsPerBar/24-0.5)
+	}
+	left, right = 0, 0
+	for t := 0.0; t < holiestBar*stepsPerBar/2; t += 2 {
+		mirror := holiestBar*stepsPerBar - 4 - t // the same note, as many steps from the end as it is from the start
+		switch int(t) % 4 {
+		case 0:
+			p := partial(float64(4 + left%5))
+			voices[1].add(p, 0.32, cherubim+t, 3.5)
+			voices[1].add(p, 0.32, cherubim+mirror, 3.5)
+			left++
+		case 2:
+			p := partial(float64(8 - right%5))
+			voices[2].add(p, 0.32, cherubim+t, 3.5)
+			if mirror != t { // the middle note is its own mirror
+				voices[2].add(p, 0.32, cherubim+mirror, 3.5)
+			}
+			right++
+		}
+	}
+
 	room := voices[12] // the room, 20 beats to a breath
 	room.add(partial(2), 0.35, cherubim, holiestBar*stepsPerBar)
 	for t := 0.0; t < holiestBar*stepsPerBar; t += 8 {

@@ -4,11 +4,11 @@
 // proportion you can hear.
 //
 // The piece walks the way a priest walked, from the court through the porch and the holy place into the
-// most holy place, and ends with the cloud of glory. The bars of the three rooms are their lengths in cubits:
+// most holy place, and ends with the cloud of glory. The porch and the most holy place last as many bars as they are cubits long, the holy place half a bar a cubit:
 //
 //	The court (12 bars, the 12 oxen)      altar 20 x 20 x 10, the molten sea, ten lavers
 //	The porch (10 bars)                   10 cubits deep
-//	The holy place (40 bars)              40 cubits long, 20 wide, 30 high
+//	The holy place (20 bars)              40 cubits long, 20 wide, 30 high: half a bar a cubit
 //	The most holy place (20 bars)         a cube of 20 x 20 x 20
 //	The glory (7 bars)                    the cloud fills the house (1 Kings 8:10-11)
 //
@@ -70,7 +70,7 @@ const (
 
 	courtBars  = 12 // the 12 oxen
 	porchBars  = 10
-	holyBars   = 40
+	holyBars   = 20 // 40 cubits, at half a bar a cubit
 	holiestBar = 20
 	gloryBars  = 7 // 7 years of building
 )
@@ -230,7 +230,7 @@ func main() {
 		}
 	}
 	// every 120 steps the three meet: the chord of the side chambers 5 : 6 : 7 over a pedal
-	for j, r := range []float64{1, 3.0 / 2, 4.0 / 3, 1, 3.0 / 2, 1} {
+	for j, r := range []float64{1, 3.0 / 2, 1} {
 		t0 := holyStart + float64(j*120)
 		span := math.Min(120, holiestStart-t0)
 		voices[4].add(partial(r), 0.5, t0, span-1)

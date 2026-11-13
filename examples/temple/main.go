@@ -14,34 +14,31 @@
 //
 // How the measures sound:
 //
-//   - the sea (10 across, 30 around, 5 high, standing on 12 oxen, three facing each way): a cycle of 12 bell
-//     strokes, one a bar, in four groups of three. The sea is 5 : 10 : 30 = 1 : 2 : 6, so the three oxen of a
-//     group sound the partials 2, 4 and 12, and the four directions stand on 1, 4/3, 3/2 and 2 (unison,
-//     fourth, fifth and octave)
+//   - the court: the sea (10 across, 30 around, 5 high, standing on 12 oxen, three facing each way) is a cycle of
+//     12 bell strokes, one a bar, in four groups of three. The sea is 5 : 10 : 30 = 1 : 2 : 6, so the three oxen
+//     of a group sound the partials 2, 4 and 12, and the four directions stand on 1, 4/3, 3/2 and 2 (unison,
+//     fourth, fifth and octave). The ten lavers (five on each side) climb and descend the partials 4 to 8 against
+//     the four beats of the bar. The offerings at the dedication (22,000 oxen and 120,000 sheep) are 22 drum
+//     strokes against 120 ticks, a polyrhythm of 11 : 60
 //
-//   - the ten lavers (five on each side): five notes on the left climb the partials 4 5 6 7 8 and five on the
-//     right descend them, against the four beats of the bar
+//   - the porch is an isorhythm, a medieval form with a rhythm cycle (the talea) and a pitch cycle (the color) of
+//     different lengths. The talea is the capital's height, the lily work and the chains: 5 + 4 + 7 = 16 steps, one
+//     bar. The color is seven partials taken from the measures themselves: 4 (lily work), 5 (capital), 7 (chains),
+//     10 (depth), 12 and 18 (the pillar's circumference and height) and 20 (width). Jachin plays the color forward,
+//     Boaz answers backward, a step later and two octaves lower
 //
-//   - the offerings at the dedication (22,000 oxen and 120,000 sheep, 1 Kings 8:63): 22 drum strokes against
-//     120 ticks over the same eight bars, a polyrhythm of 22 : 120 = 11 : 60
+//   - the holy place is a proportion canon. It is 40 long, 20 wide and 30 high, and three voices play the same theme
+//     in those proportions: the note lengths of the voice of the length are multiplied by 4, those of the voice of
+//     the height by 3 and those of the voice of the width by 2 (the longer the room, the slower). They start
+//     together and drift apart, and meet again after 120 steps (the least common multiple of 40, 20 and 30), where
+//     the chord of the three storeys of side chambers (5 : 6 : 7) sounds over a pedal that moves between 1, 3/2 and 4/3
 //
-//   - the pillars Jachin and Boaz (18 high, 12 around, so 3 : 2): Jachin sounds the third partial, Boaz the
-//     second (a fifth), and Jachin is struck every 18 beats and Boaz every 12, a 3 : 2 rhythm that comes
-//     together every 36 beats
-//
-//   - the capitals' two rows of pomegranates (200 in all): 200 bells, rows of 100 alternating, each row
-//     walking on the partials 8 to 24
-//
-//   - the holy place (40 : 20 : 30 = 4 : 2 : 3): the room is the interval 2 : 3 : 4, an octave built from a fifth
-//     and a fourth. The three storeys of side chambers (5, 6 and 7 cubits wide, each 5 high) are the chord
-//     5 : 6 : 7 (a major third, a minor third and a seventh), which changes its root every 5 bars, the height of
-//     a storey. The ten lampstands (five on each side) are lit one by one, one every 4 bars, each on a partial from
-//     8 to 17 that flickers on its own period
-//
-//   - the most holy place (20 x 20 x 20): a cube, so unison. The two cherubim, each 10 high (half the room, an
-//     octave) with wings of 5 cubits, touch the walls and each other: four wings of 5 make 20, so they enter
-//     5 bars apart. The two wings that meet in the middle start apart (a few cents) and come together to a pure
-//     unison exactly when the other arrives. The room is overlaid with gold: a high bell at each wing
+//   - the most holy place is a cube, 20 x 20 x 20, so everything in it is a mirror. In time it is a palindrome: the
+//     second ten bars are the first ten backwards. In pitch it is a mirror around D: the cherub's wing above goes
+//     down the overtones 4, 3, 8/3 and 5/2 to the center and the wing below goes up the same intervals mirrored
+//     (the undertones), so the harmony is major and minor at once. The two wings that touch in the middle start
+//     a few cents apart and come together into a pure unison exactly in the middle, then part again. The room is
+//     overlaid with gold: a high bell at each wing and a higher one in the middle
 //
 //   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
 //     the feast of dedication, 1 Kings 8:65), which then fades
@@ -137,7 +134,7 @@ func monophonic(events []note.Event) []note.Event {
 }
 
 func main() {
-	seed := flag.Uint64("seed", 1, "seed of the random stream (the pomegranates and the flames of the lamps use it)")
+	seed := flag.Uint64("seed", 1, "seed of the random stream (the offering ticks use it)")
 	midiFile := flag.String("mid", "", "write the piece to this MIDI file")
 	flag.Parse()
 	genny.Seed(*seed)
@@ -195,68 +192,72 @@ func main() {
 		drums = append(drums, note.Event{Pitch: 37, Velocity: 0.14 + 0.1*genny.Float64(), Start: offerStart + float64(i)*offerLen/120, Duration: 0.5})
 	}
 
-	// ---- the porch: the pillars Jachin and Boaz, 18 high and 12 around, and the 200 pomegranates
+	// ---- the porch: an isorhythm. Talea 5 + 4 + 7 (capital, lily work, chains), color 4 5 7 10 12 18 20 (from the measures)
+	talea := []float64{5, 4, 7}
+	color := []float64{4, 5, 7, 10, 12, 18, 20}
 	jachin, boaz := voices[3], voices[4]
-	for s := porchStart; s < holyStart; s += 18 * 4 {
-		jachin.add(partial(3), 0.6, s, math.Min(18*4, holyStart-s))
+	for i, t := 0, porchStart; t < holyStart; i++ {
+		d := talea[i%3]
+		jachin.add(partial(color[i%7]/2), 0.3+0.35*(t-porchStart)/(porchBars*stepsPerBar), t, math.Min(d, holyStart-t)-0.2)
+		t += d
 	}
-	for s := porchStart; s < holyStart; s += 12 * 4 {
-		boaz.add(partial(2), 0.55, s, math.Min(12*4, holyStart-s))
-	}
-	rows := []float64{8, 9, 10, 12, 14, 15, 16, 18, 20, 24}
-	idx := [2]int{0, 9}
-	span := float64(porchBars * stepsPerBar)
-	for i := 0; i < 200; i++ {
-		row := i % 2 // two rows of 100
-		idx[row] = min(max(idx[row]+genny.Intn(3)-1, 0), len(rows)-1)
-		swell := math.Sin(math.Pi * float64(i) / 200)
-		voices[5].add(partial(rows[idx[row]]), 0.2+0.3*swell, porchStart+float64(i)*span/200, 0.75)
+	for i, t := 0, porchStart+stepsPerBar/2; t < holyStart; i++ { // the left pillar answers, backwards, half a bar later
+		d := talea[(i+1)%3]
+		boaz.add(partial(color[6-i%7]/4), 0.3+0.3*(t-porchStart)/(porchBars*stepsPerBar), t, math.Min(d, holyStart-t)-0.2)
+		t += d
 	}
 
-	// ---- the holy place: the room 2 : 3 : 4, the side chambers 5 : 6 : 7 and the ten lampstands
-	roots := []float64{1, 3.0 / 2, 4.0 / 3, 2, 3.0 / 2, 4.0 / 3, 3.0 / 2, 1} // a block of 5 bars, the height of a storey
-	rootAt := func(t float64) float64 {
-		return roots[min(int((t-holyStart)/(5*stepsPerBar)), len(roots)-1)]
-	}
-	for j, r := range roots {
-		t0 := holyStart + float64(j*5*stepsPerBar)
-		jachin.add(partial(r), 0.55, t0, 5*stepsPerBar-1)
-		for i, ch := range []int{8, 10, 11} {
-			voices[ch].add(partial(r*[]float64{2.5, 3, 3.5}[i]), 0.42, t0+float64(i)*3, 5*stepsPerBar-1-float64(i)*3)
-		}
-	}
-	for i := 0; i < 10; i++ {
-		lit := holyStart + float64(i*4*stepsPerBar) // the lamp is lit at bar 4i
-		side := voices[6+i%2]
-		pitch := func(t float64) float64 {
-			r := float64(8+i) * rootAt(t)
-			for r > 24 {
-				r /= 2
-			}
-			return partial(r)
-		}
-		side.add(pitch(lit), 0.6, lit, 8)
-		period := float64(8 + i)
-		for t := lit + period; t < holiestStart-4; t += period {
-			if genny.Float64() < 0.8 { // the flame flickers
-				side.add(pitch(t), 0.22+0.2*genny.Float64(), t, 6)
+	// ---- the holy place: a proportion canon, durations times 4 (length), 3 (height) and 2 (width)
+	theme := []float64{4, 4.5, 5, 6, 4.5, 5, 6, 8} // partials: D E F# A E F# A D
+	lengths := []float64{2, 1, 1, 2, 1, 1, 1, 1}   // 10 steps
+	for _, v := range []struct {
+		ch            int
+		scale, octave float64
+	}{{8, 4, 0.5}, {3, 3, 1}, {6, 2, 2}} {
+		for t := holyStart; t < holiestStart; {
+			for k, r := range theme {
+				d := lengths[k] * v.scale
+				if t >= holiestStart {
+					break
+				}
+				vel := 0.4
+				if k == 0 {
+					vel = 0.55
+				}
+				voices[v.ch].add(partial(r*v.octave), vel, t, math.Min(d, holiestStart-t)-0.3)
+				t += d
 			}
 		}
 	}
+	// every 120 steps the three meet: the chord of the side chambers 5 : 6 : 7 over a pedal
+	for j, r := range []float64{1, 3.0 / 2, 4.0 / 3, 1, 3.0 / 2, 1} {
+		t0 := holyStart + float64(j*120)
+		span := math.Min(120, holiestStart-t0)
+		voices[4].add(partial(r), 0.5, t0, span-1)
+		for i, ch := range []int{10, 11, 13} {
+			voices[ch].add(partial(r*[]float64{2.5, 3, 3.5}[i]), 0.42, t0+float64(i)*3, math.Min(40, span)-float64(i)*3)
+		}
+	}
 
-	// ---- the most holy place: a cube, so unison; the wings of the cherubim, 5 cubits each
+	// ---- the most holy place: a cube, so a mirror in time and in pitch
 	cherubim := holiestStart
-	voices[8].add(partial(1), 0.5, cherubim, holiestBar*stepsPerBar) // wing 1 touches the wall
-	wing2 := voices[10]                                              // wing 2 reaches for the middle
-	for i, cents := range []float64{35, 22, 12, 5, 2} {
-		wing2.add(partial(2)+cents/100, 0.5, cherubim+float64((5+i)*stepsPerBar), stepsPerBar-0.3)
+	bar := float64(stepsPerBar)
+	upper := []float64{4, 3, 8.0 / 3, 5.0 / 2, 2}       // the wing above comes down to the middle
+	lower := []float64{1, 4.0 / 3, 3.0 / 2, 8.0 / 5, 2} // the one below goes up, mirrored
+	for i := 0; i < 10; i++ {
+		k := min(i, 9-i) // the second ten bars are the first backwards
+		voices[8].add(partial(upper[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
+		voices[13].add(partial(lower[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
 	}
-	wing2.add(partial(2), 0.5, cherubim+10*stepsPerBar, 10*stepsPerBar) // the wings touch: a pure unison
-	voices[11].add(partial(2), 0.5, cherubim+10*stepsPerBar, 10*stepsPerBar)
-	voices[13].add(partial(1), 0.5, cherubim+15*stepsPerBar, 5*stepsPerBar) // wing 4 touches the other wall
-	for w := 0; w < 4; w++ {                                                // the gold
-		voices[5].add(partial(16), 0.4, cherubim+float64(w*5*stepsPerBar), 12)
+	for i, cents := range []float64{30, 20, 12, 5, 0, 0, 5, 12, 20, 30} { // the wings that touch in the middle
+		t := cherubim + float64(5+i)*bar
+		voices[10].add(partial(2)+cents/100, 0.45, t, bar-0.3)
+		voices[11].add(partial(2)-cents/100, 0.45, t, bar-0.3)
 	}
+	for _, b := range []float64{0, 5, 14, 19} { // the gold
+		voices[5].add(partial(16), 0.4, cherubim+b*bar, 12)
+	}
+	voices[5].add(partial(32), 0.45, cherubim+10*bar-2, 14)
 	room := voices[12] // the room, 20 beats to a breath
 	room.add(partial(2), 0.35, cherubim, holiestBar*stepsPerBar)
 	for t := 0.0; t < holiestBar*stepsPerBar; t += 8 {
@@ -291,9 +292,9 @@ func main() {
 	tracks = append(tracks, midi.Track{Name: "offerings", Channel: 9, Events: drums})
 
 	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the court", 1, courtBars, "altar, molten sea on 12 oxen, ten lavers")
-	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the porch", courtBars+1, courtBars+porchBars, "Jachin 3 : Boaz 2, 200 pomegranates")
-	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the holy place", courtBars+porchBars+1, courtBars+porchBars+holyBars, "room 2:3:4, chambers 5:6:7, ten lamps")
-	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the most holy place", int(holiestStart)/stepsPerBar+1, int(gloryStart)/stepsPerBar, "a cube: unison, four wings of 5")
+	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the porch", courtBars+1, courtBars+porchBars, "isorhythm: talea 5+4+7, color 4 5 7 10 12 18 20")
+	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the holy place", courtBars+porchBars+1, courtBars+porchBars+holyBars, "canon 4:2:3, chambers 5:6:7")
+	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the most holy place", int(holiestStart)/stepsPerBar+1, int(gloryStart)/stepsPerBar, "a cube: a mirror in time and pitch")
 	fmt.Printf("%-22s bars %2d - %2d  %s\n", "the glory", int(gloryStart)/stepsPerBar+1, int(endStep)/stepsPerBar, "partials 1..14")
 	n := 0
 	for _, t := range tracks {

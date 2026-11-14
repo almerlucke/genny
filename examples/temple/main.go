@@ -394,7 +394,7 @@ func main() {
 		case t < gloryStart:
 			return 0.85
 		}
-		return 0.7
+		return 0.8
 	}
 	melody := voices[15]
 	cell := []float64{3, 2, 2}
@@ -439,16 +439,16 @@ func main() {
 				}
 			}
 			if !rest {
-				vel := (0.26 + 0.08*genny.Float64()) * loudness(t)
+				vel := (0.5 + 0.12*genny.Float64()) * loudness(t)
 				if k == 0 {
-					vel += 0.06
+					vel += 0.08
 				}
 				melody.add(partial(degree(cur)), vel, t, d)
 			}
 			t += d
 		}
 	}
-	melody.add(partial(degree(10)), 0.3, last, 24) // home on the D
+	melody.add(partial(degree(10)), 0.5, last, 24) // home on the D
 
 	// ---- the glory: the cloud fills the house, the series 1..14 on fourteen instruments
 	cloud := []int{3, 4, 8, 10, 11, 13, 12, 0, 5, 1, 2, 6, 7, 14}

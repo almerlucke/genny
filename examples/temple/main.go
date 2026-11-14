@@ -44,9 +44,9 @@
 //   - the sea and the lavers of the court return in the most holy place: the 12 strokes of the sea go round forwards and
 //     then backwards, and the lavers climb and descend, the second ten bars being the first ten backwards
 //
-//   - the offerings of the court return, the same 22 strokes against 120 ticks (11 : 60) every 10 bars, under the second
-//     half of the holy place and through the most holy place, the strokes swelling to the middle of the cube and fading
-//     again, which keeps the cube from standing still
+//   - the offerings of the court return, the same 22 strokes against 120 ticks (11 : 60), slower: over 10 bars under the
+//     second half of the holy place and then over the 20 bars of the most holy place (two and a half times slower than in the
+//     court), the strokes swelling to the middle of the cube and fading again, which keeps the cube from standing still
 //
 //   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
 //     the feast of dedication, 1 Kings 8:65), which then fades
@@ -197,17 +197,17 @@ func main() {
 	// the offerings of the dedication, 22 oxen against 120 sheep over eight bars; the phrase comes back in the second half of
 	// the holy place and in the most holy place (below)
 	var drums []note.Event
-	offering := func(start, length float64, arc func(t float64) float64) {
+	offering := func(start, length, shift float64, arc func(t float64) float64) { // shift: where the first stroke falls, in strokes (0.5 centers the pattern)
 		for i := 0; i < 22; i++ {
-			t := start + float64(i)*length/22
+			t := start + (float64(i)+shift)*length/22
 			drums = append(drums, note.Event{Pitch: 41, Velocity: arc(t), Start: t, Duration: 1})
 		}
 		for i := 0; i < 120; i++ {
-			t := start + float64(i)*length/120
+			t := start + (float64(i)+shift)*length/120
 			drums = append(drums, note.Event{Pitch: 37, Velocity: 0.14 + 0.1*genny.Float64(), Start: t, Duration: 0.5})
 		}
 	}
-	offering(float64(4*stepsPerBar), float64(8*stepsPerBar), func(t float64) float64 { return 0.35 + 0.25*(t-4*stepsPerBar)/(8*stepsPerBar) })
+	offering(float64(4*stepsPerBar), float64(8*stepsPerBar), 0, func(t float64) float64 { return 0.35 + 0.25*(t-4*stepsPerBar)/(8*stepsPerBar) })
 
 	// ---- the porch: an isorhythm. Talea 5 + 4 + 7 (capital, lily work, chains), color 4 5 7 10 12 18 20 (from the measures)
 	talea := []float64{5, 4, 7}
@@ -274,13 +274,13 @@ func main() {
 	voices[4].add(partial(1), 0.5, split+120, holiestStart-split-120-1) // home on the last 40
 	voices[5].add(partial(16), 0.4, split, 12)                          // a bell where the second half begins
 
-	// the offerings return under the second half of the holy place and the most holy place: three times 10 bars of 22 strokes
-	// against 120 ticks, the strokes swelling to the middle of the cube and fading again (the mirror)
+	// the offerings return, slower: 10 bars under the second half of the holy place (the court took 8) and then, in the most holy place,
+	// a single round over all 20 bars, two and a half times slower than in the court, centered so that it is a mirror, the strokes
+	// swelling to the middle of the cube and fading again
 	center := holiestStart + float64(holiestBar/2*stepsPerBar)
 	arc := func(t float64) float64 { return 0.25 + 0.4*(1-math.Abs(t-center)/(center-split)) }
-	for from := split; from < gloryStart; from += float64(10 * stepsPerBar) {
-		offering(from, float64(10*stepsPerBar), arc)
-	}
+	offering(split, holiestStart-split, 0, arc)
+	offering(holiestStart, gloryStart-holiestStart, 0.5, arc)
 
 	// ---- the most holy place: a cube, so a mirror in time and in pitch
 	cherubim := holiestStart

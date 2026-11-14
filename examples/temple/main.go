@@ -52,7 +52,8 @@
 //     one by one, one every two bars, high on the partials 8 to 17 on two harps, and flicker on their own periods. The
 //     light only grows, into the glory, so unlike the rest of the cube it is not a mirror
 //
-//   - counterpoint through the whole piece: a cantus firmus of 31 notes, two bars each (a cello), climbs through the
+//   - counterpoint through the whole piece: a cantus firmus of 31 notes, two bars each (plucked cello strings, four plucks a
+//     note), climbs through the
 //     court, the porch and the holy place and comes back down through the most holy place to the D it started on. Above it
 //     a nylon guitar plays a line in second species (two notes to one, written by package counterpoint, checked against its rules
 //     and tuned in just intonation) that stops where the glory begins, as the priests could not go on (1 Kings 8:11)
@@ -388,7 +389,13 @@ func main() {
 		return partial(2 * ratios[pc] * math.Pow(2, float64(oct)))
 	}
 	for i, p := range cantus {
-		voices[15].add(just(p), 0.36, float64(2*i)*bar, 2*bar-0.3)
+		for k := 0; k < 4; k++ { // plucked four times, every two beats, the first one stronger
+			vel := 0.28
+			if k == 0 {
+				vel = 0.4
+			}
+			voices[15].add(just(p), vel, float64(2*i)*bar+float64(k)*8, 7.5)
+		}
 	}
 	for j, p := range line {
 		dur := bar - 0.3

@@ -54,7 +54,7 @@
 //
 //   - counterpoint through the whole piece: a cantus firmus of 31 notes, two bars each (a cello), climbs through the
 //     court, the porch and the holy place and comes back down through the most holy place to the D it started on. Above it
-//     a flute plays a line in second species (two notes to one, written by package counterpoint, checked against its rules
+//     a nylon guitar plays a line in second species (two notes to one, written by package counterpoint, checked against its rules
 //     and tuned in just intonation) that stops where the glory begins, as the priests could not go on (1 Kings 8:11)
 //
 //   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
@@ -171,7 +171,7 @@ func main() {
 	def(11, "side chambers 7", 52, 84)
 	def(12, "altar and room", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
-	def(14, "counterpoint and glory", 73, 86) // flute
+	def(14, "counterpoint and glory", 24, 86) // nylon guitar
 	def(15, "cantus firmus", 42, 42)          // cello
 
 	// ---- the court: the altar, the sea on twelve oxen, the ten lavers, the offerings

@@ -161,8 +161,8 @@ func main() {
 	def(2, "lavers right", 9, 104)
 	def(3, "jachin", 19, 98) // church organ
 	def(4, "boaz", 19, 30)
-	def(5, "pomegranates", 8, 64) // celesta
-	def(6, "lamps left", 46, 22)  // harp
+	def(5, "gold bells", 11, 64) // vibraphone
+	def(6, "lamps left", 46, 22) // harp
 	def(7, "lamps right", 46, 106)
 	def(8, "side chambers 5", 52, 44) // choir aahs
 	def(10, "side chambers 6", 52, 64)
@@ -308,9 +308,9 @@ func main() {
 		voices[11].add(partial(2)-cents/100, 0.45, t, bar-0.3)
 	}
 	for _, b := range []float64{0, 5, 14, 19} { // the gold
-		voices[5].add(partial(16), 0.4, cherubim+b*bar, 12)
+		voices[5].add(partial(8), 0.4, cherubim+b*bar, 12)
 	}
-	voices[5].add(partial(32), 0.45, cherubim+10*bar-2, 14)
+	voices[5].add(partial(16), 0.45, cherubim+10*bar-2, 14)
 	// the sea and the lavers of the court come back: the 12 strokes of the sea go round forwards and then backwards, 24 strokes
 	// in the 20 bars (a mirror in time as well), and the lavers climb and descend as in the court, the second ten bars
 	// being the first ten backwards

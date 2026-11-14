@@ -52,6 +52,11 @@
 //     one by one, one every two bars, high on the partials 8 to 17 on two harps, and flicker on their own periods. The
 //     light only grows, into the glory, so unlike the rest of the cube it is not a mirror
 //
+//   - a gentle melody on a piano through the whole piece. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains) that goes
+//     against the bar of 16 steps and meets it again only every 7 bars; a phrase is four cells and ends on a rest. It walks on
+//     the pentatonic scale on D and its register follows the building: low in the court, climbing to the lamps in the most
+//     holy place and coming down to D in the glory
+//
 //   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
 //     the feast of dedication, 1 Kings 8:65), which then fades
 //
@@ -165,6 +170,7 @@ func main() {
 	def(12, "altar and room", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
 	def(14, "glory", 91, 64)
+	def(15, "melody", 0, 64) // piano
 
 	// ---- the court: the altar, the sea on twelve oxen, the ten lavers, the offerings
 	altar := voices[12] // 20 x 20 x 10 = 2 : 2 : 1, a low D under everything
@@ -352,6 +358,97 @@ func main() {
 	for t := 0.0; t < holiestBar*stepsPerBar; t += 8 {
 		room.cc = append(room.cc, midi.Controller{Step: cherubim + t, Number: 11, Value: int(88 + 38*math.Sin(2*math.Pi*t/(20*4)))})
 	}
+
+	// ---- a gentle melody on a piano through the whole piece. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains), which goes
+	// against the bar of 16 steps and only falls on the bar again every 7 bars; a phrase is four cells and ends on a rest. Its notes
+	// are the pentatonic scale on D (D E F# A B) in just intonation, and its register follows the building: it starts low in the court,
+	// climbs through the porch and the holy place to the lamps in the most holy place and comes down to D in the glory
+	pent := []float64{1, 9.0 / 8, 5.0 / 4, 3.0 / 2, 5.0 / 3}
+	degree := func(i int) float64 { // the ratio above the fundamental of step i of the scale, counted from D2
+		oct, d := i/5, i%5
+		if d < 0 {
+			d += 5
+			oct--
+		}
+		return pent[d] * math.Pow(2, float64(oct))
+	}
+	keys := [][2]float64{{0, 8}, {12, 9}, {22, 11}, {42, 13}, {62, 15}, {69, 10}} // the bar and the step the melody is drawn to there
+	target := func(t float64) float64 {
+		b := t / stepsPerBar
+		for k := 1; k < len(keys); k++ {
+			if b <= keys[k][0] {
+				f := (b - keys[k-1][0]) / (keys[k][0] - keys[k-1][0])
+				return keys[k-1][1] + f*(keys[k][1]-keys[k-1][1])
+			}
+		}
+		return keys[len(keys)-1][1]
+	}
+	loudness := func(t float64) float64 { // gentle everywhere, a little more in the holy place and softer in the glory
+		switch {
+		case t < porchStart:
+			return 0.8
+		case t < holyStart:
+			return 0.9
+		case t < holiestStart:
+			return 1
+		case t < gloryStart:
+			return 0.85
+		}
+		return 0.7
+	}
+	melody := voices[15]
+	cell := []float64{3, 2, 2}
+	cur := 8
+	last := endStep - 24
+	for t, c := 0.0, 0; t < last; c++ {
+		for k, d := range cell {
+			if t >= last {
+				break
+			}
+			tg := target(t)
+			rest := (c%4 == 3 && k == 2) || (k > 0 && genny.Float64() < 0.12) // the phrase breathes
+			if k == 0 && c%4 == 0 {                                           // a phrase begins on a note of the chord D F# A, as near to the target as possible
+				best := cur
+				for i := int(tg) - 3; i <= int(tg)+3; i++ {
+					if dd := ((i % 5) + 5) % 5; (dd == 0 || dd == 2 || dd == 3) && math.Abs(float64(i)-tg) < math.Abs(float64(best)-tg) {
+						best = i
+					}
+				}
+				cur = best
+			} else {
+				var weights [5]float64
+				total := 0.0
+				for j, delta := range []int{-2, -1, 0, 1, 2} {
+					w := math.Exp(-math.Pow(float64(cur+delta)-tg, 2) / 8)
+					switch delta {
+					case 0:
+						w *= 0.3
+					case -2, 2:
+						w *= 0.5
+					}
+					weights[j] = w
+					total += w
+				}
+				x := genny.Float64() * total
+				for j, w := range weights {
+					if x < w || j == 4 {
+						cur += j - 2
+						break
+					}
+					x -= w
+				}
+			}
+			if !rest {
+				vel := (0.26 + 0.08*genny.Float64()) * loudness(t)
+				if k == 0 {
+					vel += 0.06
+				}
+				melody.add(partial(degree(cur)), vel, t, d)
+			}
+			t += d
+		}
+	}
+	melody.add(partial(degree(10)), 0.3, last, 24) // home on the D
 
 	// ---- the glory: the cloud fills the house, the series 1..14 on fourteen instruments
 	cloud := []int{3, 4, 8, 10, 11, 13, 12, 0, 5, 1, 2, 6, 7, 14}

@@ -48,6 +48,15 @@
 //     second half of the holy place and then over the 20 bars of the most holy place (two and a half times slower than in the
 //     court), the strokes swelling to the middle of the cube and fading again, which keeps the cube from standing still
 //
+//   - light in the most holy place: the ten lampstands (five on each side), which stood before the inner sanctuary, are lit
+//     one by one, one every two bars, high on the partials 8 to 17 on two harps, and flicker on their own periods. The
+//     light only grows, into the glory, so unlike the rest of the cube it is not a mirror
+//
+//   - counterpoint through the whole piece: a cantus firmus of 31 notes, two bars each (a cello), climbs through the
+//     court, the porch and the holy place and comes back down through the most holy place to the D it started on. Above it
+//     a flute plays a line in second species (two notes to one, written by package counterpoint, checked against its rules
+//     and tuned in just intonation) that stops where the glory begins, as the priests could not go on (1 Kings 8:11)
+//
 //   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
 //     the feast of dedication, 1 Kings 8:65), which then fades
 //
@@ -66,9 +75,11 @@ import (
 	"slices"
 
 	"github.com/almerlucke/genny"
+	"github.com/almerlucke/genny/counterpoint"
 	"github.com/almerlucke/genny/microtonal"
 	"github.com/almerlucke/genny/midi"
 	"github.com/almerlucke/genny/note"
+	"github.com/almerlucke/genny/scale"
 )
 
 const (
@@ -160,7 +171,8 @@ func main() {
 	def(11, "side chambers 7", 52, 84)
 	def(12, "altar and room", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
-	def(14, "glory", 91, 64)
+	def(14, "counterpoint and glory", 73, 86) // flute
+	def(15, "cantus firmus", 42, 42)          // cello
 
 	// ---- the court: the altar, the sea on twelve oxen, the ten lavers, the offerings
 	altar := voices[12] // 20 x 20 x 10 = 2 : 2 : 1, a low D under everything
@@ -331,10 +343,59 @@ func main() {
 		}
 	}
 
+	// light: the ten lampstands (five each side, 1 Kings 7:49) are lit one by one, one every two bars, high on the partials 8 to 17,
+	// and flicker on their own period. They are not part of the mirror: the light only grows, into the glory
+	for i := 0; i < 10; i++ {
+		lit := cherubim + float64(2*i)*bar
+		lamp := voices[6+i%2]
+		lamp.add(partial(float64(8+i)), 0.55, lit, 10)
+		for t, period := lit+float64(8+i), float64(8+i); t < gloryStart-4; t += period {
+			if genny.Float64() < 0.8 { // the flame flickers
+				lamp.add(partial(float64(8+i)), 0.2+0.2*genny.Float64(), t, 6)
+			}
+		}
+	}
 	room := voices[12] // the room, 20 beats to a breath
 	room.add(partial(2), 0.35, cherubim, holiestBar*stepsPerBar)
 	for t := 0.0; t < holiestBar*stepsPerBar; t += 8 {
 		room.cc = append(room.cc, midi.Controller{Step: cherubim + t, Number: 11, Value: int(88 + 38*math.Sin(2*math.Pi*t/(20*4)))})
+	}
+
+	// ---- counterpoint through the whole piece: a cantus firmus of 31 notes, two bars each, walks up through the court, the porch and
+	// the holy place and comes back down through the most holy place to the D it started on, with a line above it in second
+	// species (two notes to one, written by package counterpoint, one note a bar) that stops where the glory begins. Both
+	// lines are written in semitones and then tuned to just intonation on D
+	cantus := []int{
+		50, 52, 54, 55, 54, 52, // the court
+		54, 57, 55, 54, 57, // the porch
+		59, 57, 55, 57, 59, 61, 62, 61, 59, 57, // the holy place
+		59, 57, 55, 54, 55, 54, 52, 54, 52, 50, // the most holy place
+	}
+	line, err := counterpoint.GenerateSecond(cantus, counterpoint.Config{Side: counterpoint.Above, Scale: scale.New(50, scale.Major), Low: 59, High: 81})
+	if err != nil {
+		log.Printf("counterpoint: %v (the line is the best that was found)", err)
+	}
+	for _, v := range counterpoint.CheckSecond(cantus, line) {
+		log.Printf("counterpoint: %v", v)
+	}
+	just := func(p int) float64 { // a note of the major scale (and the chromatic notes) on D as a ratio above D, in just intonation
+		ratios := []float64{1, 16.0 / 15, 9.0 / 8, 6.0 / 5, 5.0 / 4, 4.0 / 3, 45.0 / 32, 3.0 / 2, 8.0 / 5, 5.0 / 3, 9.0 / 5, 15.0 / 8}
+		oct, pc := (p-50)/12, (p-50)%12
+		if pc < 0 {
+			pc += 12
+			oct--
+		}
+		return partial(2 * ratios[pc] * math.Pow(2, float64(oct)))
+	}
+	for i, p := range cantus {
+		voices[15].add(just(p), 0.36, float64(2*i)*bar, 2*bar-0.3)
+	}
+	for j, p := range line {
+		dur := bar - 0.3
+		if j == len(line)-1 {
+			dur = 2*bar - 0.3
+		}
+		voices[14].add(just(p), 0.4+0.1*math.Sin(math.Pi*float64(j)/float64(len(line))), float64(j)*bar, dur)
 	}
 
 	// ---- the glory: the cloud fills the house, the series 1..14 on fourteen instruments

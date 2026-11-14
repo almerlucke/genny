@@ -169,8 +169,8 @@ func main() {
 	def(11, "side chambers 7", 52, 84)
 	def(12, "altar and room", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
-	def(14, "glory", 91, 64)
-	def(15, "melody", 0, 64) // piano
+	def(14, "room and glory", 94, 64) // halo pad
+	def(15, "melody", 0, 64)          // piano
 
 	// ---- the court: the altar, the sea on twelve oxen, the ten lavers, the offerings
 	altar := voices[12] // 20 x 20 x 10 = 2 : 2 : 1, a low D under everything
@@ -299,13 +299,13 @@ func main() {
 	lower := []float64{1, 4.0 / 3, 3.0 / 2, 8.0 / 5, 2} // the one below goes up, mirrored
 	for i := 0; i < 10; i++ {
 		k := min(i, 9-i) // the second ten bars are the first backwards
-		voices[8].add(partial(upper[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
-		voices[13].add(partial(lower[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
+		voices[8].add(partial(2*upper[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
+		voices[13].add(partial(2*lower[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
 	}
 	for i, cents := range []float64{30, 20, 12, 5, 0, 0, 5, 12, 20, 30} { // the wings that touch in the middle
 		t := cherubim + float64(5+i)*bar
-		voices[10].add(partial(2)+cents/100, 0.45, t, bar-0.3)
-		voices[11].add(partial(2)-cents/100, 0.45, t, bar-0.3)
+		voices[10].add(partial(4)+cents/100, 0.45, t, bar-0.3)
+		voices[11].add(partial(4)-cents/100, 0.45, t, bar-0.3)
 	}
 	for _, b := range []float64{0, 5, 14, 19} { // the gold
 		voices[5].add(partial(8), 0.4, cherubim+b*bar, 12)
@@ -353,8 +353,8 @@ func main() {
 			}
 		}
 	}
-	room := voices[12] // the room, 20 beats to a breath
-	room.add(partial(2), 0.35, cherubim, holiestBar*stepsPerBar)
+	room := voices[14] // the room, 20 beats to a breath, on a bright halo pad (channel 15, free here)
+	room.add(partial(4), 0.35, cherubim, holiestBar*stepsPerBar)
 	for t := 0.0; t < holiestBar*stepsPerBar; t += 8 {
 		room.cc = append(room.cc, midi.Controller{Step: cherubim + t, Number: 11, Value: int(88 + 38*math.Sin(2*math.Pi*t/(20*4)))})
 	}

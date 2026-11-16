@@ -353,12 +353,13 @@ func main() {
 				break
 			}
 			tg := target(t)
-			thin := 0.0 // at the pillars the melody is sparse and fills in over the porch
+			thin, swell := 0.0, 1.0 // at the pillars the melody starts very sparse and soft, and builds up over the porch
 			if t < holyStart {
-				thin = 1 - (t-porchStart)/(holyStart-porchStart)
+				ramp := math.Pow((t-porchStart)/(holyStart-porchStart), 1.5) // slow at first
+				thin, swell = 1-ramp, 0.55+0.45*ramp
 			}
-			rest := (c%4 == 3 && k == 2) || (k > 0 && genny.Float64() < 0.12+0.45*thin) || (k == 0 && genny.Float64() < 0.3*thin) // the phrase breathes
-			if k == 0 && c%4 == 0 {                                                                                               // a phrase begins on a note of the chord D F# A, as near to the target as possible
+			rest := (c%4 == 3 && k == 2) || (k > 0 && genny.Float64() < 0.12+0.78*thin) || (k == 0 && genny.Float64() < 0.55*thin) // the phrase breathes
+			if k == 0 && c%4 == 0 {                                                                                                // a phrase begins on a note of the chord D F# A, as near to the target as possible
 				best := cur
 				for i := int(tg) - 3; i <= int(tg)+3; i++ {
 					if dd := ((i % 5) + 5) % 5; (dd == 0 || dd == 2 || dd == 3) && math.Abs(float64(i)-tg) < math.Abs(float64(best)-tg) {
@@ -390,7 +391,7 @@ func main() {
 				}
 			}
 			if !rest {
-				vel := (0.5 + 0.12*genny.Float64()) * loudness(t)
+				vel := (0.5 + 0.12*genny.Float64()) * loudness(t) * swell
 				if k == 0 {
 					vel += 0.08
 				}

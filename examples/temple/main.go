@@ -153,7 +153,7 @@ func main() {
 	def(2, "lavers right", 9, 104)
 	def(3, "jachin", 19, 98) // church organ
 	def(4, "boaz", 19, 30)
-	def(5, "bells", 11, 64) // vibraphone
+	def(5, "bells", 11, 64)      // vibraphone
 	def(6, "harp pulse", 46, 30) // harp
 	def(7, "harp arpeggio", 46, 98)
 	def(8, "side chambers 5", 52, 44) // choir aahs

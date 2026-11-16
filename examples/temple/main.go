@@ -34,15 +34,14 @@
 //     together and drift apart, and meet again after 120 steps (the least common multiple of 40, 20 and 30), where
 //     the chord of the three storeys of side chambers (5 : 6 : 7) sounds over a pedal that moves between 1, 3/2 and 4/3
 //
-//   - the most holy place is a cube, 20 x 20 x 20. All three sides are equal, so the three voices of the canon of the
-//     holy place run at the same speed here, a round: the theme takes 20 steps (20 cubits) and the voices come in a
-//     third of a cycle apart, on a choir, an organ and a marimba. In time it is a mirror: the second ten bars are the
-//     first ten backwards, note for note and rhythm for rhythm. A low D sounds every 20 steps, five against the four
-//     of the bar. The room is overlaid with gold: a high bell at each wing and a higher one in the middle; and the lamps
-//     are lit (below)
+//   - the most holy place is a cube, 20 x 20 x 20, and tranquil. All three sides are equal, so the voices of the canon of the
+//     holy place run at the same speed here, a round of two soft voices (a choir and an organ) with a theme of 20 steps
+//     (20 cubits), the second entering half a cycle later. In time it is a mirror: the second ten bars are the first ten
+//     backwards, note for note and rhythm for rhythm. A low D sounds every 20 steps, five against the four of the bar. The
+//     room is overlaid with gold: a high bell at each wing and a higher one in the middle; and the lamps are lit (below).
+//     The offerings stop at its door
 //
-//   - the sea and the lavers of the court return in the most holy place: the 12 strokes of the sea go round forwards and
-//     then backwards, and the lavers climb and descend, the second ten bars being the first ten backwards
+//   - the sea of the court returns in the most holy place: its 12 strokes go round forwards and then backwards
 //
 //   - the offerings of the court return, the same 22 strokes against 120 ticks (11 : 60), slower: over 10 bars under the
 //     second half of the holy place and then over the 20 bars of the most holy place (two and a half times slower than in the
@@ -168,7 +167,7 @@ func main() {
 	def(8, "side chambers 5", 52, 44) // choir aahs
 	def(10, "side chambers 6", 52, 64)
 	def(11, "side chambers 7", 52, 84)
-	def(12, "altar, then marimba in the most holy place", 89, 64) // warm pad
+	def(12, "altar", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
 	def(14, "glory", 94, 64) // halo pad
 	def(15, "melody", 0, 64) // piano
@@ -285,14 +284,10 @@ func main() {
 	voices[4].add(partial(1), 0.5, split+120, holiestStart-split-120-1) // home on the last 40
 	voices[5].add(partial(16), 0.4, split, 12)                          // a bell where the second half begins
 
-	// the offerings return: 10 bars a round under the second half of the holy place and twice in the most holy place (the court took 8
-	// bars), the strokes swelling to the middle of the cube and fading again
+	// the offerings return for 10 bars under the second half of the holy place (the court took 8 bars) and stop at the door of the most holy place
 	center := holiestStart + float64(holiestBar/2*stepsPerBar)
 	arc := func(t float64) float64 { return 0.25 + 0.4*(1-math.Abs(t-center)/(center-split)) }
 	offering(split, holiestStart-split, 0, arc)
-	for from := holiestStart; from < gloryStart; from += float64(10 * stepsPerBar) {
-		offering(from, float64(10*stepsPerBar), 0, arc)
-	}
 
 	// ---- the most holy place: a cube, so a mirror in time and in pitch
 	cherubim := holiestStart
@@ -303,7 +298,7 @@ func main() {
 	for _, v := range []struct {
 		ch             int
 		octave, offset float64
-	}{{8, 0.5, 0}, {3, 1, 20.0 / 3}, {12, 2, 40.0 / 3}} {
+	}{{8, 0.5, 0}, {3, 1, 10}} {
 		for t := v.offset; t < 160; {
 			for k, r := range theme {
 				d := lengths[k] * 2
@@ -311,9 +306,9 @@ func main() {
 					break
 				}
 				d = math.Min(d, 160-t)
-				vel := 0.42
+				vel := 0.28
 				if k == 0 {
-					vel = 0.55
+					vel = 0.36
 				}
 				voices[v.ch].add(partial(r*v.octave), vel, cherubim+t, d-0.3)
 				voices[v.ch].add(partial(r*v.octave), vel, cherubim+320-t-d, d-0.3)
@@ -321,53 +316,32 @@ func main() {
 			}
 		}
 	}
-	voices[12].changes = []midi.ProgramChange{{Step: cherubim - 1, Program: 12}, {Step: gloryStart - 1, Program: 89}} // marimba for the high voice
-	for t := 0.0; t+12 <= holiestBar*stepsPerBar; t += 20 {                                                           // the room is 20 cubits: a low D every 20 steps, five against the four of the bar
-		voices[4].add(partial(1), 0.5, cherubim+t, 12)
+	for t := 0.0; t+12 <= holiestBar*stepsPerBar; t += 20 { // the room is 20 cubits: a low D every 20 steps, five against the four of the bar
+		voices[4].add(partial(1), 0.3, cherubim+t, 12)
 	}
 	for _, b := range []float64{0, 5, 14, 19} { // the gold
-		voices[5].add(partial(8), 0.4, cherubim+b*bar, 12)
+		voices[5].add(partial(8), 0.3, cherubim+b*bar, 12)
 	}
-	voices[5].add(partial(16), 0.45, cherubim+10*bar-2, 14)
-	// the sea and the lavers of the court come back: the 12 strokes of the sea go round forwards and then backwards, 24 strokes
-	// in the 20 bars (a mirror in time as well), and the lavers climb and descend as in the court, the second ten bars
-	// being the first ten backwards
+	voices[5].add(partial(16), 0.32, cherubim+10*bar-2, 14)
+	// the sea of the court comes back: its 12 strokes go round forwards and then backwards, 24 strokes in the 20 bars (a mirror in time
+	// as well)
 	for j := 0; j < 24; j++ {
 		i := j
 		if j >= 12 {
 			i = 23 - j
 		}
 		pitch, vel := ox(i)
-		voices[0].add(pitch, vel*0.85, cherubim+(float64(j)+0.5)*holiestBar*stepsPerBar/24, holiestBar*stepsPerBar/24-0.5)
+		voices[0].add(pitch, vel*0.55, cherubim+(float64(j)+0.5)*holiestBar*stepsPerBar/24, holiestBar*stepsPerBar/24-0.5)
 	}
-	left, right = 0, 0
-	for t := 0.0; t < holiestBar*stepsPerBar/2; t += 2 {
-		mirror := holiestBar*stepsPerBar - 4 - t // the same note, as many steps from the end as it is from the start
-		switch int(t) % 4 {
-		case 0:
-			p := partial(float64(4 + left%5))
-			voices[1].add(p, 0.32, cherubim+t, 3.5)
-			voices[1].add(p, 0.32, cherubim+mirror, 3.5)
-			left++
-		case 2:
-			p := partial(float64(8 - right%5))
-			voices[2].add(p, 0.32, cherubim+t, 3.5)
-			if mirror != t { // the middle note is its own mirror
-				voices[2].add(p, 0.32, cherubim+mirror, 3.5)
-			}
-			right++
-		}
-	}
-
 	// light: the ten lampstands (five each side, 1 Kings 7:49) are lit one by one, one every two bars, high on the partials 8 to 17,
 	// and flicker on their own period. They are not part of the mirror: the light only grows, into the glory
 	for i := 0; i < 10; i++ {
 		lit := cherubim + float64(2*i)*bar
 		lamp := voices[6+i%2]
-		lamp.add(partial(float64(8+i)), 0.55, lit, 10)
+		lamp.add(partial(float64(8+i)), 0.4, lit, 10)
 		for t, period := lit+float64(8+i), float64(8+i); t < gloryStart-4; t += period {
-			if genny.Float64() < 0.8 { // the flame flickers
-				lamp.add(partial(float64(8+i)), 0.2+0.2*genny.Float64(), t, 6)
+			if genny.Float64() < 0.3 { // the flame flickers now and then
+				lamp.add(partial(float64(8+i)), 0.14+0.14*genny.Float64(), t, 6)
 			}
 		}
 	}
@@ -404,7 +378,7 @@ func main() {
 		case t < holiestStart:
 			return 1
 		case t < gloryStart:
-			return 0.85
+			return 0.7
 		}
 		return 0.8
 	}

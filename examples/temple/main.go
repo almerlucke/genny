@@ -35,8 +35,8 @@
 //     the chord of the three storeys of side chambers (5 : 6 : 7) sounds over a pedal that moves between 1, 3/2 and 4/3
 //
 //   - the most holy place is a cube, 20 x 20 x 20, and tranquil. All three sides are equal, so the voices of the canon of the
-//     holy place run at the same speed here, a round of two soft choir voices with a theme of 20 steps
-//     (20 cubits), the second entering half a cycle later. In time it is a mirror: the second ten bars are the first ten
+//     holy place run at the same speed here, a round of two soft choir voices with a slow theme of
+//     60 steps (three times 20 cubits, so the voices change every 6 to 12 steps), the second entering half a cycle later. In time it is a mirror: the second ten bars are the first ten
 //     backwards, note for note and rhythm for rhythm. A D sounds every 20 steps on the choir, five against the four of the bar. The
 //     room is overlaid with gold: a high bell at each wing and a higher one in the middle; and the lamps are lit (below).
 //     The offerings stop at its door
@@ -292,16 +292,16 @@ func main() {
 	// ---- the most holy place: a cube, so a mirror in time and in pitch
 	cherubim := holiestStart
 	bar := float64(stepsPerBar)
-	// the three sides of the cube are all 20 cubits, so the three voices of the canon of the holy place run at the same speed here (the
-	// theme takes 20 steps) and each comes in a third of a cycle after the other, a round. The second ten bars are the first ten
+	// the three sides of the cube are all 20 cubits, so the voices of the canon of the holy place run at the same speed here (a slow
+	// theme of 60 steps) and the second comes in half a cycle after the first, a round. The second ten bars are the first ten
 	// backwards, note for note and rhythm for rhythm
 	for _, v := range []struct {
 		ch             int
 		octave, offset float64
-	}{{8, 0.5, 0}, {10, 1, 10}} {
+	}{{8, 0.5, 0}, {10, 1, 30}} {
 		for t := v.offset; t < 160; {
 			for k, r := range theme {
-				d := lengths[k] * 2
+				d := lengths[k] * 6
 				if t >= 160 {
 					break
 				}

@@ -34,22 +34,14 @@
 //     together and drift apart, and meet again after 120 steps (the least common multiple of 40, 20 and 30), where
 //     the chord of the three storeys of side chambers (5 : 6 : 7) sounds over a pedal that moves between 1, 3/2 and 4/3
 //
-//   - the most holy place is a cube, 20 x 20 x 20, and tranquil. All three sides are equal, so the voices of the canon of the
-//     holy place run at the same speed here, a round of two soft choir voices with a slow theme of
-//     60 steps (three times 20 cubits, so the voices change every 6 to 12 steps), the second entering half a cycle later. In time it is a mirror: the second ten bars are the first ten
-//     backwards, note for note and rhythm for rhythm. A D sounds every 20 steps on the choir, five against the four of the bar. The
-//     room is overlaid with gold: a high bell at each wing and a higher one in the middle; and the lamps are lit (below).
-//     The offerings stop at its door
+//   - the offerings of the court return, the same 22 strokes against 120 ticks (11 : 60), over 10 bars under the second
+//     half of the holy place, and stop at the door of the most holy place
 //
-//   - the sea of the court returns in the most holy place: its 12 strokes go round forwards and then backwards
-//
-//   - the offerings of the court return, the same 22 strokes against 120 ticks (11 : 60), slower: over 10 bars under the
-//     second half of the holy place and then over the 20 bars of the most holy place (two and a half times slower than in the
-//     court), the strokes swelling to the middle of the cube and fading again, which keeps the cube from standing still
-//
-//   - light in the most holy place: the ten lampstands (five on each side), which stood before the inner sanctuary, are lit
-//     one by one, one every two bars, high on the partials 8 to 17 on two harps, and flicker on their own periods. The
-//     light only grows, into the glory, so unlike the rest of the cube it is not a mirror
+//   - the most holy place is a cube, 20 x 20 x 20, and a gentle pulse. All sides are equal, so one number rules it: 20. A
+//     soft harp sounds every 20 steps, the root and the fifth in turn (2 : 3, the room of the holy place), five against the
+//     four beats of the bar, so the pulse slides against the bars. Over it a second harp plays a five note arpeggio in each
+//     cycle, in major, on the chords D, G, A and D, four cycles each (16 cycles in the 20 bars: 16 x 20 = 320 steps), and a
+//     vibraphone rings the top of each chord when it changes
 //
 //   - a gentle melody on a piano through the first four rooms. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains) that goes
 //     against the bar of 16 steps and meets it again only every 7 bars; a phrase is four cells and ends on a rest. It walks on
@@ -161,9 +153,9 @@ func main() {
 	def(2, "lavers right", 9, 104)
 	def(3, "jachin", 19, 98) // church organ
 	def(4, "boaz", 19, 30)
-	def(5, "gold bells", 11, 64) // vibraphone
-	def(6, "lamps left", 46, 22) // harp
-	def(7, "lamps right", 46, 106)
+	def(5, "bells", 11, 64) // vibraphone
+	def(6, "harp pulse", 46, 30) // harp
+	def(7, "harp arpeggio", 46, 98)
 	def(8, "side chambers 5", 52, 44) // choir aahs
 	def(10, "side chambers 6", 52, 64)
 	def(11, "side chambers 7", 52, 84)
@@ -289,62 +281,31 @@ func main() {
 	arc := func(t float64) float64 { return 0.25 + 0.4*(1-math.Abs(t-center)/(center-split)) }
 	offering(split, holiestStart-split, 0, arc)
 
-	// ---- the most holy place: a cube, so a mirror in time and in pitch
+	// ---- the most holy place: a cube, 20 x 20 x 20: one number, 20. A pulse every 20 steps (five against the four of the bar), a harp
+	// arpeggio on the chords D G A D (four cycles each, in just intonation) and a bell for every chord
 	cherubim := holiestStart
-	bar := float64(stepsPerBar)
-	// the three sides of the cube are all 20 cubits, so the voices of the canon of the holy place run at the same speed here (a slow
-	// theme of 60 steps) and the second comes in half a cycle after the first, a round. The second ten bars are the first ten
-	// backwards, note for note and rhythm for rhythm
-	for _, v := range []struct {
-		ch             int
-		octave, offset float64
-	}{{8, 0.5, 0}, {10, 1, 30}} {
-		for t := v.offset; t < 160; {
-			for k, r := range theme {
-				d := lengths[k] * 6
-				if t >= 160 {
-					break
-				}
-				d = math.Min(d, 160-t)
-				vel := 0.28
-				if k == 0 {
-					vel = 0.36
-				}
-				voices[v.ch].add(partial(r*v.octave), vel, cherubim+t, d-0.3)
-				voices[v.ch].add(partial(r*v.octave), vel, cherubim+320-t-d, d-0.3)
-				t += d
+	chordRoots := []float64{1, 4.0 / 3, 3.0 / 2, 1}
+	for c := 0; c < 16; c++ {
+		t := cherubim + float64(c*20)
+		root := chordRoots[c/4]
+		fifth := root * 3 // the pulse: the root (partial 2) and the fifth (partial 3) in turn
+		if c%2 == 1 {
+			voices[6].add(partial(fifth), 0.34, t, 18)
+		} else {
+			voices[6].add(partial(root*2), 0.38, t, 18)
+		}
+		for k, x := range []float64{4, 5, 6, 8, 6} { // the arpeggio: root, third, fifth, octave, fifth
+			vel := 0.26
+			if k == 0 {
+				vel = 0.34
 			}
+			voices[7].add(partial(root*x), vel, t+float64(k*4)+2, 7)
+		}
+		if c%4 == 0 { // a bell for the chord
+			voices[5].add(partial(root*8), 0.32, t, 16)
 		}
 	}
-	for t := 0.0; t+12 <= holiestBar*stepsPerBar; t += 20 { // the room is 20 cubits: a low D every 20 steps, five against the four of the bar
-		voices[11].add(partial(2), 0.3, cherubim+t, 12)
-	}
-	for _, b := range []float64{0, 5, 14, 19} { // the gold
-		voices[5].add(partial(8), 0.3, cherubim+b*bar, 12)
-	}
-	voices[5].add(partial(16), 0.32, cherubim+10*bar-2, 14)
-	// the sea of the court comes back: its 12 strokes go round forwards and then backwards, 24 strokes in the 20 bars (a mirror in time
-	// as well)
-	for j := 0; j < 24; j++ {
-		i := j
-		if j >= 12 {
-			i = 23 - j
-		}
-		pitch, vel := ox(i)
-		voices[0].add(pitch, vel*0.55, cherubim+(float64(j)+0.5)*holiestBar*stepsPerBar/24, holiestBar*stepsPerBar/24-0.5)
-	}
-	// light: the ten lampstands (five each side, 1 Kings 7:49) are lit one by one, one every two bars, high on the partials 8 to 17,
-	// and flicker on their own period. They are not part of the mirror: the light only grows, into the glory
-	for i := 0; i < 10; i++ {
-		lit := cherubim + float64(2*i)*bar
-		lamp := voices[6+i%2]
-		lamp.add(partial(float64(8+i)), 0.4, lit, 10)
-		for t, period := lit+float64(8+i), float64(8+i); t < gloryStart-4; t += period {
-			if genny.Float64() < 0.3 { // the flame flickers now and then
-				lamp.add(partial(float64(8+i)), 0.14+0.14*genny.Float64(), t, 6)
-			}
-		}
-	}
+
 	// ---- a gentle melody on a piano through the first four rooms. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains), which goes
 	// against the bar of 16 steps and only falls on the bar again every 7 bars; a phrase is four cells and ends on a rest. Its notes
 	// are the pentatonic scale on D (D E F# A B) in just intonation, and its register follows the building: it starts low in the court,

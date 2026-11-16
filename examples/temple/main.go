@@ -43,9 +43,9 @@
 //     cycle, in major, on the chords D, G, A and D, four cycles each (16 cycles in the 20 bars: 16 x 20 = 320 steps), and a
 //     vibraphone rings the top of each chord when it changes
 //
-//   - a gentle melody on a piano through the first four rooms. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains) that goes
+//   - a gentle melody on a piano from the two pillars of the porch to the end of the most holy place. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains) that goes
 //     against the bar of 16 steps and meets it again only every 7 bars; a phrase is four cells and ends on a rest. It walks on
-//     the pentatonic scale on D and its register follows the building: low in the court, climbing to the lamps in the most
+//     the pentatonic scale on D and its register follows the building: low at the pillars, climbing to the top of the most
 //     holy place; it stops on a D where the glory begins, which is left to the cloud
 //
 //   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
@@ -306,9 +306,9 @@ func main() {
 		}
 	}
 
-	// ---- a gentle melody on a piano through the first four rooms. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains), which goes
+	// ---- a gentle melody on a piano from the two pillars of the porch to the end of the most holy place. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains), which goes
 	// against the bar of 16 steps and only falls on the bar again every 7 bars; a phrase is four cells and ends on a rest. Its notes
-	// are the pentatonic scale on D (D E F# A B) in just intonation, and its register follows the building: it starts low in the court,
+	// are the pentatonic scale on D (D E F# A B) in just intonation, and its register follows the building: it starts low at the pillars,
 	// climbs through the porch and the holy place to the lamps in the most holy place, and stops on a D where the glory begins
 	pent := []float64{1, 9.0 / 8, 5.0 / 4, 3.0 / 2, 5.0 / 3}
 	degree := func(i int) float64 { // the ratio above the fundamental of step i of the scale, counted from D2
@@ -345,9 +345,9 @@ func main() {
 	}
 	melody := voices[15]
 	cell := []float64{3, 2, 2}
-	cur := 8
-	last := gloryStart - 24 // the melody stops where the glory begins
-	for t, c := 0.0, 0; t < last; c++ {
+	cur := 9
+	last := gloryStart - 24                    // the melody stops where the glory begins
+	for t, c := porchStart, 0; t < last; c++ { // it comes in at the two pillars
 		for k, d := range cell {
 			if t >= last {
 				break

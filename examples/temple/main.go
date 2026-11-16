@@ -353,8 +353,12 @@ func main() {
 				break
 			}
 			tg := target(t)
-			rest := (c%4 == 3 && k == 2) || (k > 0 && genny.Float64() < 0.12) // the phrase breathes
-			if k == 0 && c%4 == 0 {                                           // a phrase begins on a note of the chord D F# A, as near to the target as possible
+			thin := 0.0 // at the pillars the melody is sparse and fills in over the porch
+			if t < holyStart {
+				thin = 1 - (t-porchStart)/(holyStart-porchStart)
+			}
+			rest := (c%4 == 3 && k == 2) || (k > 0 && genny.Float64() < 0.12+0.45*thin) || (k == 0 && genny.Float64() < 0.3*thin) // the phrase breathes
+			if k == 0 && c%4 == 0 {                                                                                               // a phrase begins on a note of the chord D F# A, as near to the target as possible
 				best := cur
 				for i := int(tg) - 3; i <= int(tg)+3; i++ {
 					if dd := ((i % 5) + 5) % 5; (dd == 0 || dd == 2 || dd == 3) && math.Abs(float64(i)-tg) < math.Abs(float64(best)-tg) {

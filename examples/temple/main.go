@@ -34,12 +34,12 @@
 //     together and drift apart, and meet again after 120 steps (the least common multiple of 40, 20 and 30), where
 //     the chord of the three storeys of side chambers (5 : 6 : 7) sounds over a pedal that moves between 1, 3/2 and 4/3
 //
-//   - the most holy place is a cube, 20 x 20 x 20, so everything in it is a mirror. In time it is a palindrome: the
-//     second ten bars are the first ten backwards. In pitch it is a mirror around D: the cherub's wing above goes
-//     down the overtones 4, 3, 8/3 and 5/2 to the center and the wing below goes up the same intervals mirrored
-//     (the undertones), so the harmony is major and minor at once. The two wings that touch in the middle start
-//     a few cents apart and come together into a pure unison exactly in the middle, then part again. The room is
-//     overlaid with gold: a high bell at each wing and a higher one in the middle
+//   - the most holy place is a cube, 20 x 20 x 20. All three sides are equal, so the three voices of the canon of the
+//     holy place run at the same speed here, a round: the theme takes 20 steps (20 cubits) and the voices come in a
+//     third of a cycle apart, on a choir, an organ and a marimba. In time it is a mirror: the second ten bars are the
+//     first ten backwards, note for note and rhythm for rhythm. A low D sounds every 20 steps, five against the four
+//     of the bar. The room is overlaid with gold: a high bell at each wing and a higher one in the middle; and the lamps
+//     are lit (below)
 //
 //   - the sea and the lavers of the court return in the most holy place: the 12 strokes of the sea go round forwards and
 //     then backwards, and the lavers climb and descend, the second ten bars being the first ten backwards
@@ -113,6 +113,7 @@ type voice struct {
 	pan     int
 	events  []note.Event
 	cc      []midi.Controller
+	changes []midi.ProgramChange
 }
 
 var voices = map[int]*voice{}
@@ -167,10 +168,10 @@ func main() {
 	def(8, "side chambers 5", 52, 44) // choir aahs
 	def(10, "side chambers 6", 52, 64)
 	def(11, "side chambers 7", 52, 84)
-	def(12, "altar and room", 89, 64) // warm pad
+	def(12, "altar, then marimba in the most holy place", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
-	def(14, "room and glory", 94, 64) // halo pad
-	def(15, "melody", 0, 64)          // piano
+	def(14, "glory", 94, 64) // halo pad
+	def(15, "melody", 0, 64) // piano
 
 	// ---- the court: the altar, the sea on twelve oxen, the ten lavers, the offerings
 	altar := voices[12] // 20 x 20 x 10 = 2 : 2 : 1, a low D under everything
@@ -284,28 +285,45 @@ func main() {
 	voices[4].add(partial(1), 0.5, split+120, holiestStart-split-120-1) // home on the last 40
 	voices[5].add(partial(16), 0.4, split, 12)                          // a bell where the second half begins
 
-	// the offerings return, slower: 10 bars under the second half of the holy place (the court took 8) and then, in the most holy place,
-	// a single round over all 20 bars, two and a half times slower than in the court, centered so that it is a mirror, the strokes
-	// swelling to the middle of the cube and fading again
+	// the offerings return: 10 bars a round under the second half of the holy place and twice in the most holy place (the court took 8
+	// bars), the strokes swelling to the middle of the cube and fading again
 	center := holiestStart + float64(holiestBar/2*stepsPerBar)
 	arc := func(t float64) float64 { return 0.25 + 0.4*(1-math.Abs(t-center)/(center-split)) }
 	offering(split, holiestStart-split, 0, arc)
-	offering(holiestStart, gloryStart-holiestStart, 0.5, arc)
+	for from := holiestStart; from < gloryStart; from += float64(10 * stepsPerBar) {
+		offering(from, float64(10*stepsPerBar), 0, arc)
+	}
 
 	// ---- the most holy place: a cube, so a mirror in time and in pitch
 	cherubim := holiestStart
 	bar := float64(stepsPerBar)
-	upper := []float64{4, 3, 8.0 / 3, 5.0 / 2, 2}       // the wing above comes down to the middle
-	lower := []float64{1, 4.0 / 3, 3.0 / 2, 8.0 / 5, 2} // the one below goes up, mirrored
-	for i := 0; i < 10; i++ {
-		k := min(i, 9-i) // the second ten bars are the first backwards
-		voices[8].add(partial(2*upper[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
-		voices[13].add(partial(2*lower[k]), 0.5, cherubim+float64(2*i)*bar, 2*bar-0.4)
+	// the three sides of the cube are all 20 cubits, so the three voices of the canon of the holy place run at the same speed here (the
+	// theme takes 20 steps) and each comes in a third of a cycle after the other, a round. The second ten bars are the first ten
+	// backwards, note for note and rhythm for rhythm
+	for _, v := range []struct {
+		ch             int
+		octave, offset float64
+	}{{8, 0.5, 0}, {3, 1, 20.0 / 3}, {12, 2, 40.0 / 3}} {
+		for t := v.offset; t < 160; {
+			for k, r := range theme {
+				d := lengths[k] * 2
+				if t >= 160 {
+					break
+				}
+				d = math.Min(d, 160-t)
+				vel := 0.42
+				if k == 0 {
+					vel = 0.55
+				}
+				voices[v.ch].add(partial(r*v.octave), vel, cherubim+t, d-0.3)
+				voices[v.ch].add(partial(r*v.octave), vel, cherubim+320-t-d, d-0.3)
+				t += d
+			}
+		}
 	}
-	for i, cents := range []float64{30, 20, 12, 5, 0, 0, 5, 12, 20, 30} { // the wings that touch in the middle
-		t := cherubim + float64(5+i)*bar
-		voices[10].add(partial(4)+cents/100, 0.45, t, bar-0.3)
-		voices[11].add(partial(4)-cents/100, 0.45, t, bar-0.3)
+	voices[12].changes = []midi.ProgramChange{{Step: cherubim - 1, Program: 12}, {Step: gloryStart - 1, Program: 89}} // marimba for the high voice
+	for t := 0.0; t+12 <= holiestBar*stepsPerBar; t += 20 {                                                           // the room is 20 cubits: a low D every 20 steps, five against the four of the bar
+		voices[4].add(partial(1), 0.5, cherubim+t, 12)
 	}
 	for _, b := range []float64{0, 5, 14, 19} { // the gold
 		voices[5].add(partial(8), 0.4, cherubim+b*bar, 12)
@@ -353,12 +371,6 @@ func main() {
 			}
 		}
 	}
-	room := voices[14] // the room, 20 beats to a breath, on a bright halo pad (channel 15, free here)
-	room.add(partial(4), 0.35, cherubim, holiestBar*stepsPerBar)
-	for t := 0.0; t < holiestBar*stepsPerBar; t += 8 {
-		room.cc = append(room.cc, midi.Controller{Step: cherubim + t, Number: 11, Value: int(88 + 38*math.Sin(2*math.Pi*t/(20*4)))})
-	}
-
 	// ---- a gentle melody on a piano through the first four rooms. Its rhythm is a cell of 3 + 2 + 2 steps (the seven chains), which goes
 	// against the bar of 16 steps and only falls on the bar again every 7 bars; a phrase is four cells and ends on a rest. Its notes
 	// are the pentatonic scale on D (D E F# A B) in just intonation, and its register follows the building: it starts low in the court,
@@ -472,6 +484,7 @@ func main() {
 		for _, tr := range rendered {
 			tr.Controllers = append(tr.Controllers, midi.Controller{Step: 0, Number: 10, Value: v.pan}, midi.Controller{Step: 0, Number: 11, Value: 110})
 			tr.Controllers = append(tr.Controllers, v.cc...)
+			tr.ProgramChanges = v.changes
 			tracks = append(tracks, tr)
 		}
 	}

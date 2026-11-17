@@ -48,8 +48,10 @@
 //     the pentatonic scale on D and its register follows the building: low at the pillars, climbing to the top of the most
 //     holy place; it stops on a D where the glory begins, which is left to the cloud
 //
-//   - the glory: the harmonic series 1 to 14 on all fourteen instruments at once (fourteen: the two weeks of
-//     the feast of dedication, 1 Kings 8:65), which then fades
+//   - the glory: the harmonic series 1 to 14 on fourteen instruments, none of them a voice (organs, a pad, bells, harps,
+//     mallets, a kalimba and a steel pan; fourteen: the two weeks of the feast of dedication, 1 Kings 8:65). The series is
+//     in the rhythm as well as in the pitch: partial n is struck n times a bar, so they all come together on every bar
+//     line and drift apart in between, and they come in one by one and then fade
 //
 //     go run ./examples/temple -mid temple.mid
 //
@@ -161,8 +163,8 @@ func main() {
 	def(11, "side chambers 7", 52, 84)
 	def(12, "altar", 89, 64) // warm pad
 	def(13, "wing four", 52, 64)
-	def(14, "glory", 94, 64) // halo pad
-	def(15, "melody", 0, 64) // piano
+	def(14, "glory", 114, 64) // steel pan
+	def(15, "melody", 0, 64)  // piano
 
 	// ---- the court: the altar, the sea on twelve oxen, the ten lavers, the offerings
 	altar := voices[12] // 20 x 20 x 10 = 2 : 2 : 1, a low D under everything
@@ -402,14 +404,38 @@ func main() {
 	}
 	melody.add(partial(degree(15)), 0.5, last, 24) // a last D, as the glory begins
 
-	// ---- the glory: the cloud fills the house, the series 1..14 on fourteen instruments
-	cloud := []int{3, 4, 8, 10, 11, 13, 12, 0, 5, 1, 2, 6, 7, 14}
-	for i, ch := range cloud {
-		start := gloryStart + float64(i)*5
-		voices[ch].cc = append(voices[ch].cc, midi.Controller{Step: gloryStart - 1, Number: 11, Value: 110})
-		voices[ch].add(partial(float64(i+1)), 0.55-0.2*float64(i)/14, start, endStep-start+6)
-		for k := 0; k < 12; k++ { // the cloud thins out over the last bars
-			voices[ch].cc = append(voices[ch].cc, midi.Controller{Step: endStep - 40 + float64(k)*4, Number: 11, Value: int(110 * (1 - float64(k+1)/12))})
+	// ---- the glory: the cloud fills the house. The series 1..14 on fourteen instruments, none of them a voice, and the series is in
+	// the rhythm as well: partial n is struck n times a bar, evenly, so all of them come together on every bar line
+	cloudInstruments := []struct { // by partial: the channel and, for the channels that were voices, a new program
+		ch, program int
+	}{
+		{4, -1}, {3, -1}, {12, -1}, {0, -1}, {6, -1}, {7, -1}, {1, -1}, // church organ, church organ, warm pad, tubular bells, harp, harp, vibraphone
+		{5, -1}, {2, -1}, {8, 8}, {10, 10}, {11, 108}, {13, 12}, {14, -1}, // vibraphone, glockenspiel, celesta, music box, kalimba, marimba, steel pan
+	}
+	fade := func(t float64) float64 { // the cloud thins out over the last three bars
+		if t < endStep-48 {
+			return 1
+		}
+		return math.Max(0.05, 1-(t-(endStep-48))/48)
+	}
+	for i, in := range cloudInstruments {
+		n := float64(i + 1)
+		if in.program >= 0 {
+			voices[in.ch].changes = append(voices[in.ch].changes, midi.ProgramChange{Step: gloryStart - 1, Program: in.program})
+		}
+		entry := gloryStart + float64(i)*5 // they come in one by one
+		for b := 0; b < gloryBars; b++ {
+			for j := 0; j < i+1; j++ {
+				t := gloryStart + float64(b*stepsPerBar) + float64(j)*stepsPerBar/n
+				if t < entry {
+					continue
+				}
+				vel := 0.5 - 0.15*n/14
+				if j == 0 { // on the bar line they all sound together
+					vel += 0.12
+				}
+				voices[in.ch].add(partial(n), vel*fade(t), t, math.Max(0.8, stepsPerBar/n*0.9))
+			}
 		}
 	}
 

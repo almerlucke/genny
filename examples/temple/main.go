@@ -50,8 +50,8 @@
 //
 //   - the glory: the harmonic series 1 to 14 on fourteen instruments, none of them a voice (organs, a pad, bells, harps,
 //     mallets, a kalimba and a steel pan; fourteen: the two weeks of the feast of dedication, 1 Kings 8:65). The series is
-//     in the rhythm as well as in the pitch: partial n is struck n times a bar, so they all come together on every bar
-//     line and drift apart in between, and they come in one by one and then fade
+//     in the rhythm as well as in the pitch: partial n is struck n times in all, evenly, so the lowest rings through the
+//     whole glory, the highest twinkles, and they come in one by one and then fade
 //
 //     go run ./examples/temple -mid temple.mid
 //
@@ -405,7 +405,7 @@ func main() {
 	melody.add(partial(degree(15)), 0.5, last, 24) // a last D, as the glory begins
 
 	// ---- the glory: the cloud fills the house. The series 1..14 on fourteen instruments, none of them a voice, and the series is in
-	// the rhythm as well: partial n is struck n times a bar, evenly, so all of them come together on every bar line
+	// the rhythm as well: partial n is struck n times in all, evenly, so the low ones ring long and the high ones twinkle
 	cloudInstruments := []struct { // by partial: the channel and, for the channels that were voices, a new program
 		ch, program int
 	}{
@@ -423,19 +423,12 @@ func main() {
 		if in.program >= 0 {
 			voices[in.ch].changes = append(voices[in.ch].changes, midi.ProgramChange{Step: gloryStart - 1, Program: in.program})
 		}
-		entry := gloryStart + float64(i)*5 // they come in one by one
-		for b := 0; b < gloryBars; b++ {
-			for j := 0; j < i+1; j++ {
-				t := gloryStart + float64(b*stepsPerBar) + float64(j)*stepsPerBar/n
-				if t < entry {
-					continue
-				}
-				vel := 0.5 - 0.15*n/14
-				if j == 0 { // on the bar line they all sound together
-					vel += 0.12
-				}
-				voices[in.ch].add(partial(n), vel*fade(t), t, math.Max(0.8, stepsPerBar/n*0.9))
-			}
+		entry := gloryStart + float64(i)*4 // they come in one by one
+		span := endStep - 8 - entry
+		for j := 0; j < i+1; j++ { // partial n is struck n times, evenly, until the end
+			t := entry + float64(j)*span/n
+			vel := 0.5 - 0.15*n/14
+			voices[in.ch].add(partial(n), vel*fade(t), t, math.Max(1.5, span/n*0.95))
 		}
 	}
 

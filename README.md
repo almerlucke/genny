@@ -130,6 +130,9 @@ above 1).
 | `shapers/wavefold`, `saturate`, `rectify`, `curve`, `smoothstep`, `deadzone`, `harmonics`, `polynomial` | Wavefolders (sine, triangle), tanh/atan/logistic/tube saturation, rectifiers, bend curves, S-curves, dead zone and expander, additive harmonics, polynomials (Legendre) |
 | `shapers/phasedist`, `window` | Casio CZ phase distortion (saw, square, pulse, resonant); window functions (Hann, Hamming, Blackman, Tukey, Gaussian, Kaiser, Welch) |
 | `shapers/bitcrush`, `hysteresis`, `onepole`, `samplehold`, `funnel` | Shapers with memory (bit and sample rate reduction, Schmitt trigger and backlash, one-pole filter, sample and hold) and snapping to a scale, a sieve or a set of values |
+| `shapers/add`, `mult`, `mod`, `ripple`, `linear`, `clip`, `mirror`, `quantize`, `lookup`, `chebyshev` | Basic shapers: add, multiply, remainder, scale and shift, clip, mirror, quantize, lookup tables, Chebyshev polynomials |
+| `shapers/series`, `parallel`, `mixer`, `route`, `thru` | Combine shapers: chain them, feed several and fold the results, sum with levels, route to one of several, pass through |
+| `shapers/emulations/...` | Analog oscillator emulations: hard and soft sync, pulse width modulation, Minimoog Voyager sawtooth, JP-8000 triangle modulation and supersaw |
 | `float/export/plot` | A small plotting package of its own (standard library only), PNG or SVG by file extension: lines, scatter, polygons, grid, histogram, bars, spectrum (own FFT, `SpectrumOf`, `ShaperSpectrum`), log axes, legend, piano roll |
 
 ### Notes and output
@@ -184,3 +187,7 @@ go test -fuzz=FuzzReadRoundTrip -fuzztime=20s ./midi              # fuzz (also F
 
 Under plain `go test` the fuzz tests only run their seed corpora. `prop_music_test.go` holds property
 tests over 200 seeds (reproducibility, ranges, degenerate input, counterpoint passing its own checker).
+
+## License
+
+MIT, see [LICENSE](LICENSE).
